@@ -372,6 +372,9 @@ public abstract class CheckoutBaseController extends CircUtilController {
 
 
         OlePatronDocument patronDocument = getCurrentBorrower(oleForm);
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("patronId", patronDocument.getOlePatronId());
+        patronDocument.setOleLoanDocuments((List<OleLoanDocument>) getBusinessObjectService().findMatching(OleLoanDocument.class, map));
         facts.add(patronDocument);
 
         facts.add(oleItemRecordForCirc.getOleDeliverRequestBo());
