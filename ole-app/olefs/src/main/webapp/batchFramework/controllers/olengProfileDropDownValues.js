@@ -873,3 +873,9 @@ var fieldOperation = {
     isAddLine: false,
     collapsed: true
 };
+
+var deliverNotice = {
+    deliverNoticeName : '',
+    isAddLine: false,
+    isEdit : false
+};

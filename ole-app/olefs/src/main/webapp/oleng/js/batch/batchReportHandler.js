@@ -159,6 +159,12 @@ function populateBatchExportReportFromContent(fileContent, $scope) {
     $scope.batchExportReportFailureSectionPanel = getExportFailureSectionContent(fileContent);
 }
 
+function populateBatchNoticeReportFromContent(fileContent, $scope) {
+    var batchNoticeReport = getBatchNoticeReportContent(fileContent);
+    $scope.batchDeliverNoticeReportPanel = batchNoticeReport;
+    $scope.failureLoanAndNoticeResponsePanel = prepareFailureLoanAndNoticeResponses(fileContent)
+}
+
 function getMainSectionContent(fileContent) {
     var mainSectionContent = {
         "bibImportProfileName": fileContent["bibImportProfileName"],
@@ -202,6 +208,35 @@ function getMainSectionContentForBatchExport(fileContent) {
     };
     return mainSectionContent;
 }
+
+function getBatchNoticeReportContent(fileContent) {
+    var batchNoticereport = {
+        "jobDetailId": fileContent["jobDetailId"],
+        "jobName": fileContent["jobName"],
+        "profileName":fileContent["profileName"],
+        "noticeType": fileContent["noticeType"],
+        "totalNoticeCount" : fileContent["totalNoticeCount"],
+        "successNoticeCount": fileContent["successNoticeCount"],
+        "failedNoticeCount": fileContent["failedNoticeCount"]
+    };
+    return batchNoticereport;
+}
+
+function prepareFailureLoanAndNoticeResponses(fileContent){
+    var tmpFailureLoanAndNoticeResponse = fileContent["failureLoanAndNoticeResponses"];
+    var failureLoanAndNoticeResponses = [];
+    for(var i = 0; i < tmpFailureLoanAndNoticeResponse.length; i++){
+        var failureLoanAndNoticeResponse = {
+            "failedLoanId" : tmpFailureLoanAndNoticeResponse[i].failedLoanId,
+            "failedNoticeId" : tmpFailureLoanAndNoticeResponse[i].failedNoticeId
+        }
+        failureLoanAndNoticeResponses.push(failureLoanAndNoticeResponse);
+    }
+
+    return failureLoanAndNoticeResponses;
+}
+
+
 
 function getMainSectionContentForOrderAndInvoiceImport(fileContent) {
     var mainSectionContent = {
