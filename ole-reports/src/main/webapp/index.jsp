@@ -80,61 +80,133 @@
         </div>
     </div>
 </div>
-<div id="iframe_portlet_container_div">
-    <br/>
-    <div class="center">
-        <%   if (request != null && request.getRequestURL() != null && request.getRequestURL().toString().contains("reports.staging.ole.kuali.org")) {%>
-        <p>Note: The reports data source is pointing to the staging environment at the moment.</p>
-        <% } %>
-        <ul class="first">
-            <h5><u>Requests</u></h5>
-            <ul>
-                <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/CancelledOnHolds.rptdesign"%>" target="_blank">Cancelled On Holds</a></li>
-                <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/Holds.rptdesign"%>" target="_blank">Requests List</a></li>
-                <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/ItemMostlyRequested.rptdesign"%>" target="_blank">Item Requested Most</a></li>
-                <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/RequestedOverdueItems.rptdesign"%>" target="_blank">Requested Item Overdue</a></li>
-            </ul>
-        </ul>
-        <ul class="first">
-            <div class ="Fines">
-
-                <h5><u>Fines</u></h5>
-                <ul>
-                    <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/CashTransactions.rptdesign"%>" target="_blank">Cash Transactions</a></li>
-                    <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/VufindLogs.rptdesign"%>" target="_blank">Vufind Fines</a></li>
-                </ul>
-
-            </div>
-        </ul>
-    </div>
-    <div class="middle">
-        <ul class="first">
-            <h5><u>History</u></h5>
-            <ul>
-                <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/PatronList.rptdesign"%>" target="_blank">Patron List</a></li>
-                <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/PatronNotes.rptdesign"%>" target="_blank">Patron Notes</a></li>
-                <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/FastAdd.rptdesign"%>" target="_blank">FastAdd</a></li>
-                <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/ItemCirculationRecord.rptdesign"%>" target="_blank">Item Circulation History</a></li>
-                <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/CirculationHistoryItems.rptdesign"%>" target="_blank">Circulation History List</a></li>
-                <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/PatronCirculationHistory.rptdesign"%>" target="_blank">Patron Circulation History</a></li>
-                <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/ClaimsReturn.rptdesign"%>" target="_blank">Claims Returned</a></li>
-                <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/LostOrMissingItems.rptdesign"%>" target="_blank">Lost/Missing Items</a></li>
-                <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/GeneralStatistics.rptdesign"%>" target="_blank">General Statistics</a></li>
-            </ul>
-        </ul>
-        <%--<ul id="statistics">
-            <h5><u>Statistics</u></h5>
-            <ul>
-                <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/ItemTypeStatistics.rptdesign"%>" target="_blank">Item Type Statistics</a></li>
-                <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/CollectionStatistics.rptdesign"%>" target="_blank">Collection Statistics</a></li>
-
-                <li><a href="<%= request.getContextPath() + "/frameset?__report=deliver/StandardLoanBooks.rptdesign"%>" target="_blank">Standard Loan Books</a></li>
-            </ul>
-        </ul>--%>
-
-    </div>
-    <br/><br/><br/><br/>
-</div>
+<table border="0" width="100%" cellspacing="0" cellpadding="0" id="iframe_portlet_container_table">
+<tbody>
+    <tr valign="top" bgcolor="#FFFFFF">
+	<td width="15" class="leftback-focus">&nbsp;</td>
+	<td class="content" valign="top">
+	    <div class="portlet">
+		<div class="header">
+		    <div class="portlet-title">
+			<h2 class="portlet-title">Requests</h2>
+			    </div>
+		    </div>
+			<div class="chan-contain">
+		    <div class="body">
+			<a class="portal_link" href="<%= request.getContextPath() + "/frameset?__report=deliver/CancelledOnHolds.rptdesign"%>" target="_blank" title="Cancelled On Holds">Cancelled On Holds</a>
+			<br>
+			<a class="portal_link" href="<%= request.getContextPath() + "/frameset?__report=deliver/Holds.rptdesign"%>" target="_blank" title="Requests List">Requests List</a>
+			<br>
+			<a class="portal_link" href="<%= request.getContextPath() + "/frameset?__report=deliver/ItemMostlyRequested.rptdesign"%>" target="_blank" title="Item Requested Most">Item Requested Most</a>
+			<br>
+			<a class="portal_link" href="<%= request.getContextPath() + "/frameset?__report=deliver/RequestedOverdueItems.rptdesign"%>" target="_blank" title="Requested Item Overdue">Requested Item Overdue</a>
+			<br>
+		    </div>
+		</div>
+	    </div>
+	    <div class="portlet">
+		<div class="header">
+		    <div class="portlet-title">
+			<h2 class="portlet-title">Fines</h2>
+		    </div>
+		</div>
+		<div class="chan-contain">
+		    <div class="body">
+			<a class="portal_link" href="<%= request.getContextPath() + "/frameset?__report=deliver/CashTransactions.rptdesign"%>" target="_blank" title="Cash Transactions">Cash Transactions</a>
+			<br>
+			<a class="portal_link" href="<%= request.getContextPath() + "/frameset?__report=deliver/VufindLogs.rptdesign"%>" target="_blank" title="Vufind Fines">Vufind Fines</a>
+			<br>
+		    </div>
+		</div>
+	    </div>
+	</td>
+	<td class="content" valign="top">
+	    <div class="portlet">
+		<div class="header">
+		    <div class="portlet-title">
+			<h2 class="portlet-title">History</h2>
+		    </div>
+		</div>
+		<div class="chan-contain">
+		    <div class="body">
+		    	<strong>ITEM DETAILS</strong>
+			<br>
+			<br>
+			<a class="portal_link" href="<%= request.getContextPath() + "/frameset?__report=deliver/ItemCirculationRecord.rptdesign"%>" target="_blank" title="Item Circulation History">Item Circulation History</a>
+			<br>
+			<a class="portal_link" href="<%= request.getContextPath() + "/frameset?__report=deliver/CirculationHistoryItems.rptdesign"%>" target="_blank" title="Circulation History List">Circulation History List</a>
+			<br>
+			<a class="portal_link" href="<%= request.getContextPath() + "/frameset?__report=deliver/LostOrMissingItems.rptdesign"%>" target="_blank" title="Lost/Missing Items">Lost/Missing Items</a>
+			<br>
+			<a class="portal_link" href="<%= request.getContextPath() + "/frameset?__report=deliver/ClaimsReturn.rptdesign"%>" target="_blank" title="Claims Returned">Claims Returned</a>
+			<br>
+			<a class="portal_link" href="<%= request.getContextPath() + "/frameset?__report=deliver/FastAdd.rptdesign"%>" target="_blank" title="FastAdd">FastAdd</a>
+			<br>
+			<br>
+		    	<strong>PATRON DETAILS</strong>
+			<br>
+			<br>
+			<a class="portal_link" href="<%= request.getContextPath() + "/frameset?__report=deliver/PatronList.rptdesign"%>" target="_blank" title="Patron List">Patron List</a>
+			<br>
+			<a class="portal_link" href="<%= request.getContextPath() + "/frameset?__report=deliver/PatronNotes.rptdesign"%>" target="_blank" title="Patron Notes">Patron Notes</a>
+			<br>
+			<a class="portal_link" href="<%= request.getContextPath() + "/frameset?__report=deliver/PatronCirculationHistory.rptdesign"%>" target="_blank" title="Patron Circulation History">Patron Circulation History</a>
+			<br>
+			<!-- <a class="portal_link" href="<%= request.getContextPath() + "/frameset?__report=deliver/GeneralStatistics.rptdesign"%>" target="_blank" title="General Statistics">General Statistics</a>
+			<br> -->
+		    </div>
+		</div>
+	    </div>
+	</td>
+	<td class="content" valign="top">
+	    <div class="portlet">
+		<div class="header">
+		    <div class="portlet-title">
+			<h2 class="portlet-title">Following day (Live)</h2>
+		    </div>
+		</div>
+		<div class="chan-contain">
+		    <div class="body">
+		    	<strong>ITEM HISTORY</strong>
+			<br>
+			<br>
+			<a class="portal_link" href="http://olereporting.soas.ac.uk/ReportServer/Pages/ReportViewer.aspx?/RepOLE/ItemList&rs:Command=Render" target="_blank" title="Item Acquisition and Circulation Details List">Item Acquisition and Circulation Details List</a>
+			<br>
+			<a class="portal_link" href="http://olereporting.soas.ac.uk/ReportServer/Pages/ReportViewer.aspx?/RepOLE/BIBList&rs:Command=Render" target="_blank" title="BIB Record Details and Classmarks">BIB Record Details and Classmarks</a>
+			<br>
+			<br>
+		    	<strong>ACQUISITION DETAILS</strong>
+			<br>
+			<br>
+			<a class="portal_link" href="http://olereporting.soas.ac.uk/ReportServer/Pages/ReportViewer.aspx?/RepOLE/SpendBreakDown&rs:Command=Render" target="_blank" title="Spend Breakdown by Account Number">Spend Breakdown by Account Number</a>
+			<br>
+			<a class="portal_link" href="http://olereporting.soas.ac.uk/ReportServer/Pages/ReportViewer.aspx?/RepOLE/POTransmission&rs:Command=Render" target="_blank" title="PO Transmission Date, format and sent to address">PO Transmission Date, format and sent to address</a>
+			<br>
+			<a class="portal_link" href="http://olereporting.soas.ac.uk/ReportServer/Pages/ReportViewer.aspx?/RepOLE/ReceivingTimeline&rs:Command=Render" target="_blank" title="Receiving Timeline by Vendor in Number of Days">Receiving Timeline by Vendor in Number of Days</a>
+			<br>
+			<a class="portal_link" href="http://olereporting.soas.ac.uk/ReportServer/Pages/ReportViewer.aspx?/RepOLE/SerialClaiming&rs:Command=Render" target="_blank" title="Serials Claiming by Vendor List">Serials Claiming by Vendor List</a>
+			<br>
+			<a class="portal_link" href="http://olereporting.soas.ac.uk/ReportServer/Pages/ReportViewer.aspx?/RepOLE/PurchaseOrderItems&rs:Command=Render" target="_blank" title="Purchase Order Items List">Purchase Order Items List</a>
+			<br>
+			<a class="portal_link" href="http://olereporting.soas.ac.uk/ReportServer/Pages/ReportViewer.aspx?/RepOLE/Invoices&rs:Command=Render" target="_blank" title="Invoice Details List">Invoice Details List</a>
+			<br>
+			<br>
+		    	<strong>CIRCULATION DETAILS</strong>
+			<br>
+			<br>
+			<a class="portal_link" href="http://olereporting.soas.ac.uk/ReportServer/Pages/ReportViewer.aspx?/RepOLE/PatronAttributeList&rs:Command=Render" target="_blank" title="Patron Attributes PCodes and more">Patron Attributes PCodes and more</a>
+			<br>
+			<a class="portal_link" href="http://olereporting.soas.ac.uk/ReportServer/Pages/ReportViewer.aspx?/RepOLE/SconulReport&rs:Command=Render" target="_blank" title="SCONUL access list">SCONUL access list</a>
+			<br>
+			<a class="portal_link" href="http://olereporting.soas.ac.uk/ReportServer/Pages/ReportViewer.aspx?/RepOLE/Reservations&rs:Command=Render" target="_blank" title="Reservations">Reservations</a>
+			<br>
+		    </div>
+		</div>
+	    </div>
+	</td>
+    </tr>
+</tbody>
+</table>
 <%@ include file="oleFooter.jsp" %>
 </body>
 </html>
