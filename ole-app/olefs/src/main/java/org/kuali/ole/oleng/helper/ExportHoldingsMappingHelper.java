@@ -99,6 +99,7 @@ public class ExportHoldingsMappingHelper {
                         }
                         generateSubFieldsForItem(holdingsTree.getHoldings(), item, dataFieldsItemsMap, dataFieldsDonorMap, dataFieldsItemNoteMap);
                     }
+                    isStaffOnly = false;
                 }
             }
             if (CollectionUtils.isEmpty(dataFieldsHoldingsMap) && CollectionUtils.isEmpty(dataFieldsItemsMap) && CollectionUtils.isEmpty(dataFieldsDonorMap) && CollectionUtils.isEmpty(dataFieldsItemNoteMap)){
