@@ -52,6 +52,11 @@ public class LostNoticesExecutor extends LoanNoticesExecutor {
     }
 
     @Override
+    public void saveLoanDocument() {
+        getBusinessObjectService().save(loanDocuments);
+    }
+
+    @Override
     protected String getNoticeType() {
         return OLEConstants.NOTICE_LOST;
     }
