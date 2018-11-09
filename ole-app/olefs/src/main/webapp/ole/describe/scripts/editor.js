@@ -141,10 +141,12 @@ jq(document).ready(function () {
         }
     });
     jq("#OleItemCallNumber_control").live('blur',function() {
-        if (jq("OleItemShelvingScheme_control").val().length < 1) {
-            if (jq("#OleItemCallNumber_control").val().length < 1) {
-                jq("#OleItemShelvingOrder_control").val("");
-                jq("#OleItemShelvingScheme_control").val(1);
+        if(jq("OleItemShelvingScheme_control").val() != undefined) {
+            if (jq("OleItemShelvingScheme_control").val().length < 1) {
+                if (jq("#OleItemCallNumber_control").val().length < 1) {
+                    jq("#OleItemShelvingOrder_control").val("");
+                    jq("#OleItemShelvingScheme_control").val(1);
+                }
             }
         }
     });
