@@ -5,12 +5,19 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.annotate.JsonAutoDetect;
+import org.codehaus.jackson.annotate.JsonMethod;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.introspect.VisibilityChecker;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.drools.core.time.impl.CronExpression;
 import org.kuali.ole.OLEConstants;
 import org.kuali.ole.constants.OleNGConstants;
+import org.kuali.ole.deliver.bo.OleBorrowerType;
+import org.kuali.ole.deliver.bo.OlePatronDocument;
+import org.kuali.ole.deliver.bo.OleStatisticalCategoryBo;
+import org.kuali.ole.deliver.service.OLEDeliverService;
 import org.kuali.ole.oleng.batch.process.model.BatchJobDetails;
 import org.kuali.ole.oleng.batch.process.model.BatchProcessJob;
 import org.kuali.ole.oleng.batch.process.model.BatchScheduleJob;
@@ -22,6 +29,7 @@ import org.kuali.ole.spring.batch.BatchUtil;
 import org.kuali.ole.spring.batch.processor.*;
 import org.kuali.rice.core.api.config.property.ConfigContext;
 import org.kuali.rice.krad.UserSession;
+import org.kuali.rice.krad.service.KRADServiceLocator;
 import org.kuali.rice.krad.util.GlobalVariables;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -31,11 +39,12 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by sheiksalahudeenm on 25/6/15.
@@ -109,6 +118,82 @@ public class BatchRestController extends OleNgControllerBase {
         }
         return null;
     }
+
+    private JSONObject getJSONPatronDocumentList(List<OlePatronDocument> olePatronDocuments) throws Exception{
+        JSONObject responsePatronList = new JSONObject();
+        JSONArray jsonArray = new JSONArray();
+        ObjectMapper mapper = new ObjectMapper();
+        String value = mapper.writeValueAsString(olePatronDocuments);
+
+        if(olePatronDocuments!=null && !olePatronDocuments.isEmpty()) {
+            for (OlePatronDocument olePatronDocument : olePatronDocuments) {
+                olePatronDocument = OLEDeliverService.populatePatronName(olePatronDocument);
+                JSONObject responsePatron = new JSONObject();
+                responsePatron.put("olePatronId", olePatronDocument.getOlePatronId());
+                responsePatron.put("patronName", olePatronDocument.getPatronName());
+                responsePatron.put("studentId", olePatronDocument.getMiddleName());
+                responsePatron.put("barcode", olePatronDocument.getBarcode());
+                responsePatron.put("expirationDate",olePatronDocument.getExpirationDate());
+                responsePatron.put("Pcode1", olePatronDocument.getNamePrefix());
+                responsePatron.put("Pcode2", olePatronDocument.getNameSuffix());
+                responsePatron.put("borrowerType", olePatronDocument.getBorrowerTypeName());
+                responsePatron.put("statisticalCategory", olePatronDocument.getOleStatisticalCategoryName());
+                jsonArray.put(responsePatron);
+            }
+        }
+        return responsePatronList.put("patronList", jsonArray);
+    }
+
+    @RequestMapping(value = "/appendPatron", method = RequestMethod.POST, produces = {MediaType. APPLICATION_JSON + OleNGConstants.CHARSET_UTF_8})
+    @ResponseBody
+    public String appendPatronRecords(@RequestBody String selectedPatronId, HttpServletRequest request) throws Exception {
+        JSONObject jsonObject = new JSONObject(selectedPatronId);
+        JSONArray jsonArray = (JSONArray)jsonObject.get("selectedPatronId");
+        List<String> patronList = new ArrayList<>();
+        if(jsonArray.length()>0) {
+            for (int i = 0; i < jsonArray.length(); i++) {
+                patronList.add((String) jsonArray.get(i));
+            }
+        }
+        request.getSession().setAttribute("selectedPatronId",patronList);
+        System.out.print(selectedPatronId);
+        return "{}";
+    }
+
+    @RequestMapping(value = "/patronImport", method = RequestMethod.POST, produces = {MediaType. APPLICATION_JSON + OleNGConstants.CHARSET_UTF_8})
+    @ResponseBody
+    public String patronImportResults(@RequestParam(value = "file", required = false) MultipartFile file, @RequestParam("patronField") String patronField,
+                             HttpServletRequest request) throws Exception {
+        Map<String,List<String>> patronMap = new HashMap<>();
+        List<String> inputData = new ArrayList<>();
+        JSONObject response = new JSONObject();
+        List<String> patronIds = new ArrayList<>();
+        List<OlePatronDocument> patronList = new ArrayList<>();
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            if (file.getOriginalFilename().endsWith(".txt")) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
+                for (String line; (line = reader.readLine()) != null; ) {
+                    if (org.apache.commons.lang.StringUtils.isNotEmpty(line))
+                        inputData.add(line);
+                }
+                if (inputData.size() > 0) {
+                    for (String patronInfo : inputData) {
+                        patronIds.add(patronInfo.trim());
+                    }
+                }
+            }
+            patronMap.put(patronField, patronIds);
+            patronList = (List<OlePatronDocument>) KRADServiceLocator.getBusinessObjectService().findMatching(OlePatronDocument.class, patronMap);
+           // mapper.se
+            //response =  getJSONPatronDocumentList(patronList);
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return mapper.writeValueAsString(patronList);
+    }
+
 
     private JSONObject processBatch(File uploadDirectory, String batchType, String profileId, String fileExtension, BatchJobDetails batchJobDetails) throws Exception {
         BatchFileProcessor batchProcessor = getBatchProcessor(batchType);
