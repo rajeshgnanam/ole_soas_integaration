@@ -204,6 +204,7 @@ public abstract class ExportCallable implements Callable {
         Set<String> extentOfOwnershipNoteSet = null;
         Set<String> linkSet = null;
         SimpleDateFormat univDateFormat = new SimpleDateFormat(RiceConstants.SIMPLE_DATE_FORMAT_FOR_DATE+" "+"HH:mm:ss");
+        SimpleDateFormat dateFormatString = new SimpleDateFormat(RiceConstants.SIMPLE_DATE_FORMAT_FOR_DATE);
         SimpleDateFormat dbDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         while (resultSet.next()) {
@@ -271,6 +272,8 @@ public abstract class ExportCallable implements Callable {
                     holdingsAccessInformation.setAccessLocation(resultSet.getString("CODE"));
                     holdingsAccessInformation.setAuthenticationType(resultSet.getString("AUTHENTICATION_TYPE_ID"));
                     holdingsAccessInformation.setMaterialsSpecified(resultSet.getString("MATERIALS_SPECIFIED"));
+                    holdingsAccessInformation.setFirstIndicator(resultSet.getString("FIRST_INDICATOR"));
+                    holdingsAccessInformation.setSecondIndicator(resultSet.getString("SECOND_INDICATOR"));
                     oleHoldings.setHoldingsAccessInformation(holdingsAccessInformation);
                     String statisticalSearchId = resultSet.getString("STAT_SEARCH_CODE_ID");
                     if (StringUtils.isNotEmpty(statisticalSearchId)) {
@@ -282,6 +285,28 @@ public abstract class ExportCallable implements Callable {
                     }
                     oleHoldings.setLocalPersistentLink(resultSet.getString("LOCAL_PERSISTENT_URI"));
                     oleHoldings.setSubscriptionStatus(resultSet.getString("SUBSCRIPTION_STATUS"));
+                    String initialSubscriptionStartDate = resultSet.getString("INITIAL_SBRCPTN_START_DT");
+                    String currentSubscriptionStartDate = resultSet.getString("CURRENT_SBRCPTN_START_DT");
+                    String currentSubscriptionEndDate = resultSet.getString("CURRENT_SBRCPTN_END_DT");
+                    String cancellationDecisionDate = resultSet.getString("CANCELLATION_DECISION_DT");
+                    String cancellationEffectiveDate = resultSet.getString("CANCELLATION_EFFECTIVE_DT");
+                    if(initialSubscriptionStartDate!=null) {
+                        oleHoldings.setInitialSubscriptionStartDate(dateFormatString.format(dbDateFormat.parse(initialSubscriptionStartDate)));
+                    }
+                    if (currentSubscriptionStartDate != null) {
+                        oleHoldings.setCurrentSubscriptionStartDate(dateFormatString.format(dbDateFormat.parse(currentSubscriptionStartDate)));
+                    }
+                    if (currentSubscriptionEndDate != null) {
+                        oleHoldings.setCurrentSubscriptionEndDate(dateFormatString.format(dbDateFormat.parse(currentSubscriptionEndDate)));
+                    }
+                    if (cancellationEffectiveDate != null) {
+                        oleHoldings.setCancellationEffectiveDate(dateFormatString.format(dbDateFormat.parse(cancellationEffectiveDate)));
+                    }
+                    if (cancellationDecisionDate != null) {
+                        oleHoldings.setCancellationDecisionDate(dateFormatString.format(dbDateFormat.parse(cancellationDecisionDate)));
+                    }
+                    oleHoldings.setCancellationCandidate(Boolean.valueOf(resultSet.getString("CANCELLATION_CANDIDATE")));
+                    oleHoldings.setCancellationReason(resultSet.getString("CANCELLATION_REASON"));
                     oleHoldings.setInterLibraryLoanAllowed(Boolean.valueOf(resultSet.getString("ALLOW_ILL")));
                     coverageSet = new HashSet<>();
                     perpetualSet = new HashSet<>();
