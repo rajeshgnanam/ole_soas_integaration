@@ -122,9 +122,6 @@ public class BatchRestController extends OleNgControllerBase {
     private JSONObject getJSONPatronDocumentList(List<OlePatronDocument> olePatronDocuments) throws Exception{
         JSONObject responsePatronList = new JSONObject();
         JSONArray jsonArray = new JSONArray();
-        ObjectMapper mapper = new ObjectMapper();
-        String value = mapper.writeValueAsString(olePatronDocuments);
-
         if(olePatronDocuments!=null && !olePatronDocuments.isEmpty()) {
             for (OlePatronDocument olePatronDocument : olePatronDocuments) {
                 olePatronDocument = OLEDeliverService.populatePatronName(olePatronDocument);
@@ -169,8 +166,6 @@ public class BatchRestController extends OleNgControllerBase {
         JSONObject response = new JSONObject();
         List<String> patronIds = new ArrayList<>();
         List<OlePatronDocument> patronList = new ArrayList<>();
-        ObjectMapper mapper = new ObjectMapper();
-
         try {
             if (file.getOriginalFilename().endsWith(".txt")) {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
@@ -186,12 +181,11 @@ public class BatchRestController extends OleNgControllerBase {
             }
             patronMap.put(patronField, patronIds);
             patronList = (List<OlePatronDocument>) KRADServiceLocator.getBusinessObjectService().findMatching(OlePatronDocument.class, patronMap);
-           // mapper.se
-            //response =  getJSONPatronDocumentList(patronList);
+            response =  getJSONPatronDocumentList(patronList);
         } catch(Exception e){
             e.printStackTrace();
         }
-        return mapper.writeValueAsString(patronList);
+        return response.toString();
     }
 
 
