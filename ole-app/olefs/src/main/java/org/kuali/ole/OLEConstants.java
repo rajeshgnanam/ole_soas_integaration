@@ -682,6 +682,7 @@ public class OLEConstants {
         public static final String DESTINATION_FIELD_ITEM_STATUS = "Item Status";
         public static final String DESTINATION_FIELD_LINK_TEXT = "Link Text";
         public static final String DESTINATION_FIELD_LINK_URL = "URL";
+        public static final String DESTINATION_FIELD_HOLDINGS_URI_ID = "Holdings Uri Id";
         public static final String DESTINATION_FIELD_PERSISTENTLINK = "Persistent Link";
         public static final String DESTINATION_FIELD_PUBLIC_DISPLAY_NOTE = "Public Display Note";
         public static final String DESTINATION_FIELD_PUBLIC_NOTE = "Public Note";

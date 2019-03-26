@@ -100,21 +100,25 @@ public class ExportEholdingsMappingHelper extends ExportHoldingsMappingHelper {
                     for (Link link : oleHoldings.getLink()) {
                         if (StringUtils.isNotEmpty(link.getUrl())) {
                             dataField = checkDataField(dataFieldList, StringUtils.trim(entry.getKey()).substring(0, 3));
-                            if (dataField == null) {
+                         //   if (dataField == null) {
                                 dataField = getDataField(entry);
                                 generateLink(oleHoldings, link, getCode(entry.getKey()), dataField);
-                                if (dataFieldEHoldingMap.containsValue(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_LINK_TEXT)) {
+                                if (dataFieldEHoldingMap.containsValue(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_LINK_TEXT) || dataFieldEHoldingMap.containsValue(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_HOLDINGS_URI_ID)) {
                                     for (Map.Entry<String, String> dataMapEntry : dataFieldEHoldingMap.entrySet()) {
                                         if (dataMapEntry.getValue().equalsIgnoreCase(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_LINK_TEXT)) {
                                             if (StringUtils.isNotEmpty(link.getText())) {
                                                 generateLinkText(oleHoldings, link, getCode(dataMapEntry.getKey()), dataField);
-                                                break;
+                                            }
+                                        }
+                                        if (dataMapEntry.getValue().equalsIgnoreCase(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_HOLDINGS_URI_ID)) {
+                                            if (StringUtils.isNotEmpty(link.getText())) {
+                                                generateLinkId(oleHoldings, link, getCode(dataMapEntry.getKey()), dataField);
                                             }
                                         }
                                     }
                                 }
                                 if (!dataField.getSubfields().isEmpty()) dataFieldList.add(dataField);
-                            } else {
+                           /* } else {
                                 generateLink(oleHoldings, link, getCode(entry.getKey()), dataField);
                                 if (dataFieldEHoldingMap.containsValue(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_LINK_TEXT)) {
                                     for (Map.Entry<String, String> dataMapEntry : dataFieldEHoldingMap.entrySet()) {
@@ -126,7 +130,7 @@ public class ExportEholdingsMappingHelper extends ExportHoldingsMappingHelper {
                                         }
                                     }
                                 }
-                            }
+                            }*/
                         }
                     }
                     break;
@@ -412,6 +416,15 @@ public class ExportEholdingsMappingHelper extends ExportHoldingsMappingHelper {
                         if (!dataField.getSubfields().isEmpty()) dataFieldList.add(dataField);
                     } else {
                         generateImprint(oleHoldings, getCode(entry.getKey()), dataField);
+                    }
+                }else if (entry.getValue().equalsIgnoreCase(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_PUBLISHER)) {
+                    dataField = checkDataField(dataFieldList, StringUtils.trim(entry.getKey()).substring(0, 3));
+                    if (dataField == null) {
+                        dataField = getDataField(entry);
+                        generatePublisher(oleHoldings, getCode(entry.getKey()), dataField);
+                        if (!dataField.getSubfields().isEmpty()) dataFieldList.add(dataField);
+                    } else {
+                        generatePublisher(oleHoldings, getCode(entry.getKey()), dataField);
                     }
                 } else if (entry.getValue().equalsIgnoreCase(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_PLATFORM)) {
                     dataField = checkDataField(dataFieldList, StringUtils.trim(entry.getKey()).substring(0, 3));
@@ -725,6 +738,27 @@ public class ExportEholdingsMappingHelper extends ExportHoldingsMappingHelper {
         try {
             if (link != null && null != link.getText()) {
                 subField.setData(link.getText());
+                dataField.addSubfield(subField);
+            }
+        } catch (Exception ex) {
+            logError(oleHoldings, ex, "generateLinkText()");
+        }
+
+    }
+
+    /**
+     * generates the Link Id for the given oleHoldings
+     * @param oleHoldings
+     * @param code
+     * @param dataField
+     * @throws Exception
+     */
+    private void generateLinkId(OleHoldings oleHoldings,Link link, char code, DataField dataField) throws Exception {
+        Subfield subField = new SubfieldImpl();
+        subField.setCode(code);
+        try {
+            if (link != null && null != link.getHoldingsUriId()) {
+                subField.setData(link.getHoldingsUriId());
                 dataField.addSubfield(subField);
             }
         } catch (Exception ex) {
@@ -1053,6 +1087,26 @@ public class ExportEholdingsMappingHelper extends ExportHoldingsMappingHelper {
             logError(oleHoldings, ex, "generateImprint()");
         }
     }
+    /**
+     * generates the subfields for Publisher for the given oleHoldings
+     *
+     * @param oleHoldings
+     * @param code
+     * @param dataField
+     */
+    private void generatePublisher(OleHoldings oleHoldings, char code, DataField dataField) throws Exception {
+        try {
+            if (null != oleHoldings) {
+                Subfield subField = new SubfieldImpl();
+                subField.setCode(code);
+                subField.setData(oleHoldings.getPublisher());
+                dataField.addSubfield(subField);
+            }
+        } catch (Exception ex) {
+            logError(oleHoldings, ex, "generatePublisher()");
+        }
+    }
+
     /**
      * generates the subfields for the Public Note for the given oleHoldings
      *

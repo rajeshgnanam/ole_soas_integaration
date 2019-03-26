@@ -253,6 +253,7 @@ public abstract class ExportCallable implements Callable {
                     donorSet = coverageSet = perpetualSet = null;
                 } else {
                     holdings = new EHoldings();
+                    oleHoldings.setHoldingsIdentifier(resultSet.getString("HOLDINGS_ID"));
                     oleHoldings.setAccessStatus(resultSet.getString("ACCESS_STATUS"));
                     oleHoldings.setImprint(resultSet.getString("IMPRINT"));
                     Platform platform = new Platform();
@@ -382,6 +383,7 @@ public abstract class ExportCallable implements Callable {
             } else {
                 if (linkSet.add(resultSet.getString("HOLDINGS_URI_ID"))) {
                     Link link = new Link();
+                    link.setHoldingsUriId(resultSet.getString("HOLDINGS_URI_ID"));
                     link.setUrl(resultSet.getString("URI"));
                     link.setText(resultSet.getString("TEXT"));
                     oleHoldings.getLink().add(link);
