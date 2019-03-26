@@ -916,6 +916,9 @@ public class RdbmsItemDocumentManager extends RdbmsHoldingsDocumentManager imple
                 dueDateItem = dueDateItem + " 00:00:00";
                 dueDateTime(item, itemRecord, dueDateItem);
             } else if (dueDateItemArray.length > 1) {
+                if(dueDateItemArray.length == 3){
+                    dueDateItem = dueDateItemArray[0] + " " + dueDateItemArray[1] + dueDateItemArray[2];
+                }
                 dueDateTime(item, itemRecord, dueDateItem);
             } else {
                 itemRecord.setDueDateTime(null);
@@ -930,6 +933,9 @@ public class RdbmsItemDocumentManager extends RdbmsHoldingsDocumentManager imple
                 originalDueDateTime = originalDueDateTime + DESCRIBE_EFFECTIVE_DATE;
                 originalDueDateTime(item,itemRecord,originalDueDateTime);
             } else if (originalDueDateTimeArray.length > 1) {
+                if(originalDueDateTimeArray.length == 3){
+                    originalDueDateTime = originalDueDateTimeArray[0] + " " + originalDueDateTimeArray[1] + originalDueDateTimeArray[2];
+                }
                 originalDueDateTime(item,itemRecord,originalDueDateTime);
             } else {
                 itemRecord.setOriginalDueDate(null);
@@ -944,6 +950,9 @@ public class RdbmsItemDocumentManager extends RdbmsHoldingsDocumentManager imple
                 checkOutDateItem = checkOutDateItem + " 00:00:00";
                 itemRecord.setCheckOutDateTime(convertDateToTimeStamp(checkOutDateItem));
             } else if (dueDateItemArray.length > 1) {
+                if(dueDateItemArray.length == 3){
+                    checkOutDateItem = dueDateItemArray[0] + " " + dueDateItemArray[1] + dueDateItemArray[2];
+                }
                 itemRecord.setCheckOutDateTime(convertDateToTimeStamp(checkOutDateItem));
             } else {
                 itemRecord.setCheckOutDateTime(null);
