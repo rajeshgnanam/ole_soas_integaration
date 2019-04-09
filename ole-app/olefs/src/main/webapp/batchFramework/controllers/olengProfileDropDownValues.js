@@ -881,3 +881,9 @@ var deliverNotice = {
     isAddLine: false,
     isEdit : false
 };
+
+var deliverNotice = {
+    deliverNoticeName : '',
+    isAddLine: false,
+    isEdit : false
+};

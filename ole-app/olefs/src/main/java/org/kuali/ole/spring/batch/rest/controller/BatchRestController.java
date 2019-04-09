@@ -72,6 +72,9 @@ public class BatchRestController extends OleNgControllerBase {
     private DeliverNoticeFileProcessor deliverNoticeFileProcessor;
     
     @Autowired
+    private DeliverNoticeFileProcessor deliverNoticeFileProcessor;
+    
+    @Autowired
     private OleNGBatchJobScheduler oleNGBatchJobScheduler;
 
     private BatchExcelReportUtil batchExcelReportUtil;
