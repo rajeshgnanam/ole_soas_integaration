@@ -36,6 +36,7 @@ public class ExportEholdingsMappingHelper extends ExportHoldingsMappingHelper {
         dataFieldList.clear();
         if (holdingsTree != null) {
             Map<String, String> dataFieldEHoldingMap = new LinkedHashMap<>();
+            Map<String, String> dataFieldLinkUrlMap = new LinkedHashMap<>();
             Map<String, String> dataFieldCoverageMap = new HashMap<>();
             Map<String, String> dataFieldsDonorMap = new HashMap<>();
             Map<String, String> dataFieldPerpetualAccessMap = new HashMap<>();
@@ -61,6 +62,10 @@ public class ExportEholdingsMappingHelper extends ExportHoldingsMappingHelper {
                             || mappingOptionsBo.getField().equalsIgnoreCase(DESTINATION_FIELD_DONOR_NOTE)
                             || mappingOptionsBo.getField().equalsIgnoreCase(DESTINATION_FIELD_DONOR_CODE)) {
                         dataFieldsDonorMap.put(key, mappingOptionsBo.getField());
+                    } else if (mappingOptionsBo.getField().equalsIgnoreCase(DESTINATION_FIELD_LINK_TEXT)
+                            || mappingOptionsBo.getField().equalsIgnoreCase(DESTINATION_FIELD_HOLDINGS_URI_ID)
+                            || mappingOptionsBo.getField().equalsIgnoreCase(DESTINATION_FIELD_LINK_URL)) {
+                        dataFieldLinkUrlMap.put(key, mappingOptionsBo.getField());
                     } else {
                         dataFieldEHoldingMap.put(key, mappingOptionsBo.getField());
                     }
@@ -75,7 +80,7 @@ public class ExportEholdingsMappingHelper extends ExportHoldingsMappingHelper {
                     }
                 }
                 if(!isStaffOnly) {
-                    generateSubFieldsForEHolding(holdingsTree.getHoldings(), dataFieldEHoldingMap, dataFieldCoverageMap, dataFieldsDonorMap, dataFieldPerpetualAccessMap);
+                    generateSubFieldsForEHolding(holdingsTree.getHoldings(), dataFieldEHoldingMap, dataFieldLinkUrlMap,dataFieldCoverageMap, dataFieldsDonorMap, dataFieldPerpetualAccessMap);
                 }
             } else {
                 return Collections.EMPTY_LIST;
@@ -84,7 +89,7 @@ public class ExportEholdingsMappingHelper extends ExportHoldingsMappingHelper {
         return dataFieldList;
     }
 
-    protected void generateSubFieldsForEHolding(Holdings holdings, Map<String, String> dataFieldEHoldingMap, Map<String, String> dataFieldCoverageMap, Map<String, String> dataFieldsDonorMap, Map<String, String> dataFieldPerpetualAccessMap) throws Exception {
+    protected void generateSubFieldsForEHolding(Holdings holdings, Map<String, String> dataFieldEHoldingMap, Map<String, String> dataFieldLinkUrlMap, Map<String, String> dataFieldCoverageMap, Map<String, String> dataFieldsDonorMap, Map<String, String> dataFieldPerpetualAccessMap) throws Exception {
         List<DataField> linkList = new ArrayList<>();
         OleHoldings oleHoldings = null;
         if (holdings.getContentObject() != null) {
@@ -95,47 +100,6 @@ public class ExportEholdingsMappingHelper extends ExportHoldingsMappingHelper {
         }
         try {
             DataField dataField;
-            for (Map.Entry<String, String> entry : dataFieldEHoldingMap.entrySet()) {
-                if (entry.getValue().equalsIgnoreCase(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_LINK_URL)) {
-                    for (Link link : oleHoldings.getLink()) {
-                        if (StringUtils.isNotEmpty(link.getUrl())) {
-                            dataField = checkDataField(dataFieldList, StringUtils.trim(entry.getKey()).substring(0, 3));
-                         //   if (dataField == null) {
-                                dataField = getDataField(entry);
-                                generateLink(oleHoldings, link, getCode(entry.getKey()), dataField);
-                                if (dataFieldEHoldingMap.containsValue(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_LINK_TEXT) || dataFieldEHoldingMap.containsValue(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_HOLDINGS_URI_ID)) {
-                                    for (Map.Entry<String, String> dataMapEntry : dataFieldEHoldingMap.entrySet()) {
-                                        if (dataMapEntry.getValue().equalsIgnoreCase(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_LINK_TEXT)) {
-                                            if (StringUtils.isNotEmpty(link.getText())) {
-                                                generateLinkText(oleHoldings, link, getCode(dataMapEntry.getKey()), dataField);
-                                            }
-                                        }
-                                        if (dataMapEntry.getValue().equalsIgnoreCase(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_HOLDINGS_URI_ID)) {
-                                            if (StringUtils.isNotEmpty(link.getText())) {
-                                                generateLinkId(oleHoldings, link, getCode(dataMapEntry.getKey()), dataField);
-                                            }
-                                        }
-                                    }
-                                }
-                                if (!dataField.getSubfields().isEmpty()) dataFieldList.add(dataField);
-                           /* } else {
-                                generateLink(oleHoldings, link, getCode(entry.getKey()), dataField);
-                                if (dataFieldEHoldingMap.containsValue(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_LINK_TEXT)) {
-                                    for (Map.Entry<String, String> dataMapEntry : dataFieldEHoldingMap.entrySet()) {
-                                        if (dataMapEntry.getValue().equalsIgnoreCase(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_LINK_TEXT)) {
-                                            if (StringUtils.isNotEmpty(link.getText())) {
-                                                generateLinkText(oleHoldings, link, getCode(dataMapEntry.getKey()), dataField);
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }*/
-                        }
-                    }
-                    break;
-                }
-            }
             for (Map.Entry<String, String> entry : dataFieldEHoldingMap.entrySet()) {
 
                 if (entry.getValue().equalsIgnoreCase(OLEConstants.OLEBatchProcess.LOCAL_IDENTIFIER)) {
@@ -466,6 +430,9 @@ public class ExportEholdingsMappingHelper extends ExportHoldingsMappingHelper {
             if (!CollectionUtils.isEmpty(dataFieldCoverageMap)) {
                 generateCoverageFields(oleHoldings, dataFieldCoverageMap);
             }
+            if (!CollectionUtils.isEmpty(dataFieldLinkUrlMap)) {
+                generateLinkFields(oleHoldings, dataFieldLinkUrlMap);
+            }
             if (!CollectionUtils.isEmpty(dataFieldPerpetualAccessMap)) {
                 generatePerpetualAccessFields(oleHoldings, dataFieldPerpetualAccessMap);
             }
@@ -479,6 +446,37 @@ public class ExportEholdingsMappingHelper extends ExportHoldingsMappingHelper {
             LOG.error("Error while mapping oleHoldings data ::" + oleHoldings.getHoldingsIdentifier(), ex);
             buildError(ERR_INSTANCE, oleHoldings.getHoldingsIdentifier(), ERR_CAUSE, ex.getMessage(), TIME_STAMP, new Date().toString());
             throw ex;
+        }
+    }
+
+    private void generateLinkFields(OleHoldings oleHoldings, Map<String, String> dataFieldLinkUrlMap) throws Exception {
+        DataField dataField;
+        for (Map.Entry<String, String> entry : dataFieldLinkUrlMap.entrySet()) {
+            if (entry.getValue().equalsIgnoreCase(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_LINK_URL)) {
+                for (Link link : oleHoldings.getLink()) {
+                    if (StringUtils.isNotEmpty(link.getUrl())) {
+                        //dataField = checkDataField(dataFieldList, StringUtils.trim(entry.getKey()).substring(0, 3));
+                        dataField = getDataField(entry);
+                        generateLink(oleHoldings, link, getCode(entry.getKey()), dataField);
+
+                        for (Map.Entry<String, String> dataMapEntry : dataFieldLinkUrlMap.entrySet()) {
+                            if (dataMapEntry.getValue().equalsIgnoreCase(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_LINK_TEXT)) {
+                                if (StringUtils.isNotEmpty(link.getText())) {
+                                    generateLinkText(oleHoldings, link, getCode(dataMapEntry.getKey()), dataField);
+                                }
+                            }
+                            if (dataMapEntry.getValue().equalsIgnoreCase(OLEConstants.OLEBatchProcess.DESTINATION_FIELD_HOLDINGS_URI_ID)) {
+                                if (StringUtils.isNotEmpty(link.getText())) {
+                                    generateLinkId(oleHoldings, link, getCode(dataMapEntry.getKey()), dataField);
+                                }
+                            }
+                        }
+
+                        if (!dataField.getSubfields().isEmpty()) dataFieldList.add(dataField);
+                    }
+                }
+                break;
+            }
         }
     }
 
