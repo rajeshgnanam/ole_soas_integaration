@@ -4028,5 +4028,6 @@ public class OLEConstants {
     public static final String View_Error_Button = "View Error Button";
     public static final String View_Claims_Return_Screen = "View Claims Return Screen";
     public static final String Override_Patron_Block = "Override Patron Block";
+    public static final String Override_Renew = "Override Renew";
 
 }

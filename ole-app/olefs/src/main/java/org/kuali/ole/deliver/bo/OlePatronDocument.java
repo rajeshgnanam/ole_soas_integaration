@@ -127,6 +127,7 @@ public class OlePatronDocument extends PersistableBusinessObjectBase implements 
     private boolean errorPermission;
     private boolean claimsReturnPermission;
     private boolean overrideBlockPermission;
+    private boolean overrideRenewPermission;
 
     private transient IdentityService identityService;
     private boolean lostPatron = false;
@@ -2257,6 +2258,17 @@ public class OlePatronDocument extends PersistableBusinessObjectBase implements 
         if (perm != null) {
             claimsReturnPermission = KimApiServiceLocator.getPermissionService().hasPermission(GlobalVariables.getUserSession().getPerson().getPrincipalId(), OLEConstants.DLVR_NMSPC, OLEConstants.View_Claims_Return_Screen);
             return claimsReturnPermission;
+        }
+        else {
+            return Boolean.TRUE;
+        }
+    }
+
+    public boolean hasOverrideRenewPermission() {
+        Permission perm = KimApiServiceLocator.getPermissionService().findPermByNamespaceCodeAndName(OLEConstants.DLVR_NMSPC, OLEConstants.Override_Renew);
+        if (perm != null) {
+            overrideRenewPermission = KimApiServiceLocator.getPermissionService().hasPermission(GlobalVariables.getUserSession().getPerson().getPrincipalId(), OLEConstants.DLVR_NMSPC, OLEConstants.Override_Renew);
+            return overrideRenewPermission;
         }
         else {
             return Boolean.TRUE;
