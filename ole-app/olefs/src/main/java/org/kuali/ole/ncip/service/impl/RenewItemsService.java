@@ -216,7 +216,7 @@ public abstract class RenewItemsService {
         oleRenewalHistory.setItemBarcode(oleLoanDocument.getItemId());
         oleRenewalHistory.setItemId(oleLoanDocument.getItemUuid());
         oleRenewalHistory.setLoanId(oleLoanDocument.getLoanId());
-        oleRenewalHistory.setOperatorId(GlobalVariables.getUserSession().getPrincipalId());
+        oleRenewalHistory.setOperatorId(GlobalVariables.getUserSession()!=null ? GlobalVariables.getUserSession().getPrincipalId() : "3M");
         oleRenewalHistory.setPatronBarcode(null != oleLoanDocument.getOlePatron() ? oleLoanDocument.getOlePatron().getBarcode() : oleLoanDocument.getPatronBarcode());
         oleRenewalHistory.setRenewalDueDate(oleLoanDocument.getLoanDueDate());
         oleRenewalHistory.setRenewedDate(new Timestamp(System.currentTimeMillis()));

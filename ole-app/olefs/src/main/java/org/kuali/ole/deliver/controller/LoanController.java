@@ -2493,7 +2493,7 @@ public class LoanController extends UifControllerBase {
                     oleRenewalHistory.setItemBarcode(oleLoanDocument.getItemId());
                     oleRenewalHistory.setItemId(oleLoanDocument.getItemUuid());
                     oleRenewalHistory.setLoanId(oleLoanDocument.getLoanId());
-                    oleRenewalHistory.setOperatorId(GlobalVariables.getUserSession().getPrincipalId());
+                    oleRenewalHistory.setOperatorId(GlobalVariables.getUserSession()!=null ? GlobalVariables.getUserSession().getPrincipalId() : "");
                     oleRenewalHistory.setPatronBarcode(oleLoanForm.getPatronBarcode());
                     oleRenewalHistory.setRenewalDueDate(oleLoanDocument.getLoanDueDate());
                     oleRenewalHistory.setRenewedDate(new Timestamp(System.currentTimeMillis()));
