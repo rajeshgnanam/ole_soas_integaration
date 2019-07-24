@@ -744,7 +744,8 @@ public class OleDeliverRequestDocumentHelperServiceImpl {
         try {
             Map<String,String> noticeConfigMap = new HashMap<>();
             noticeConfigMap.put("noticeType",OLEConstants.CANCELLATION_NOTICE);
-
+            noticeConfigMap.put("noticeName",oleDeliverRequestBo.getRequestTypeCode());
+            noticeConfigMap.put("active","Y");
             List<OleNoticeContentConfigurationBo> oleNoticeContentConfigurationBos = (List<OleNoticeContentConfigurationBo>)getBusinessObjectService().findMatching(OleNoticeContentConfigurationBo.class,noticeConfigMap);
             oleNoticeContentConfigurationBo = (CollectionUtils.isNotEmpty(oleNoticeContentConfigurationBos) ? oleNoticeContentConfigurationBos.get(0) : null);
 
@@ -859,6 +860,7 @@ public class OleDeliverRequestDocumentHelperServiceImpl {
             oleNoticeBo.setItemId(itemSearch.getItemBarCode() != null ? itemSearch.getItemBarCode() : "");
             oleNoticeBo.setTitle(itemSearch.getTitle() != null ? itemSearch.getTitle() : "");
             oleNoticeBo.setOleItem(getItem(oleDeliverRequestBo.getItemUuid()));
+            oleNoticeBo.setItemCallNumberPrefix(itemSearch.getCallNumberPrefix());
             if (oleNoticeBo.getPatronEmailAddress() != null && !oleNoticeBo.getPatronEmailAddress().isEmpty()) {
                 oleNoticeBos.add(oleNoticeBo);
             }
@@ -4881,7 +4883,7 @@ public class OleDeliverRequestDocumentHelperServiceImpl {
         return map;
     }
 
-    private Map<String, Map<String, List<OLEDeliverNotice>>> buildMapofNoticesForEachPatronAndConfigName(List<OLEDeliverNotice> oleDeliverNotices) {
+    public Map<String, Map<String, List<OLEDeliverNotice>>> buildMapofNoticesForEachPatronAndConfigName(List<OLEDeliverNotice> oleDeliverNotices) {
         Map<String, Map<String, List<OLEDeliverNotice>>> map = new HashMap<>();
         String patronId;
         for (Iterator<OLEDeliverNotice> iterator = oleDeliverNotices.iterator(); iterator.hasNext(); ) {

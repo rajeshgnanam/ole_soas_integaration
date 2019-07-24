@@ -90,8 +90,9 @@ var dataMappingObject = {
     ],
     destinationFieldsForBibMarcEHoldings :  [
         {id: 'Local Identifier', name: 'Local Identifier'},
-        {id: 'callNumber', name: 'Call Number'},
         {id: 'accessStatus', name: 'Access Status'},
+        {id: 'callNumber', name: 'Call Number'},
+        {id: 'callNumberPrefix', name: 'Call Number Prefix'},
         {id: 'callNumberType', name: 'Call Number Type'},
         {id: 'locationLevel1', name: 'Location Level1'},
         {id: 'locationLevel2', name: 'Location Level2'},
@@ -101,6 +102,7 @@ var dataMappingObject = {
         {id: 'url', name: 'URL'},
         {id: 'persistentLink', name: 'Persistent Link'},
         {id: 'linkText', name: 'Link Text'},
+        {id: 'Holdings Uri Id', name: 'Holdings Uri Id'},
         {id: 'donorCode', name: 'Donor Code'},
         {id: 'statisticalCode', name: 'Statistical Code'},
         {id: 'platform', name: 'Platform'},
@@ -123,7 +125,6 @@ var dataMappingObject = {
         {id: 'accessPassword', name: 'Access Password'},
         {id: 'authenticationType', name: 'Authentication Type'},
         {id: 'proxied', name: 'Proxied'},
-        {id: 'prefix', name: 'Prefix'},
         {id: 'coverageStartDateRelativeFormat', name: 'Coverage Start Date Relative Format'},
         {id: 'coverageEndDateRelativeFormat', name: 'Coverage End Date Relative Format'},
         {id: 'perpetualAccessStartDate', name: 'Perpetual Access Start Date'},
@@ -203,6 +204,7 @@ var dataMappingObject = {
         {id: 'accessStatus', name: 'Access Status'},
         {id: 'staffOnly', name: 'Staff Only'},
         {id: 'callNumber', name: 'Call Number'},
+        {id: 'callNumberPrefix', name: 'Call Number Prefix'},
         {id: 'callNumberType', name: 'Call Number Type'},
         {id: 'locationLevel1', name: 'Location Level1'},
         {id: 'locationLevel2', name: 'Location Level2'},
@@ -212,6 +214,7 @@ var dataMappingObject = {
         {id: 'url', name: 'URL'},
         {id: 'persistentLink', name: 'Persistent Link'},
         {id: 'linkText', name: 'Link Text'},
+        {id: 'Holdings Uri Id', name: 'Holdings Uri Id'},
         {id: 'donorCode', name: 'Donor Code'},
         {id: 'statisticalCode', name: 'Statistical Code'},
         {id: 'platform', name: 'Platform'},
@@ -234,7 +237,6 @@ var dataMappingObject = {
         {id: 'accessPassword', name: 'Access Password'},
         {id: 'authenticationType', name: 'Authentication Type'},
         {id: 'proxied', name: 'Proxied'},
-        {id: 'prefix', name: 'Prefix'},
         {id: 'coverageStartDateRelativeFormat', name: 'Coverage Start Date Relative Format'},
         {id: 'coverageEndDateRelativeFormat', name: 'Coverage End Date Relative Format'},
         {id: 'perpetualAccessStartDate', name: 'Perpetual Access Start Date'},
@@ -872,6 +874,12 @@ var fieldOperation = {
     ignoreGPF: false,
     isAddLine: false,
     collapsed: true
+};
+
+var deliverNotice = {
+    deliverNoticeName : '',
+    isAddLine: false,
+    isEdit : false
 };
 
 var deliverNotice = {

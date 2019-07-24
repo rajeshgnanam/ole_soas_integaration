@@ -300,7 +300,7 @@ public class RdbmsItemDocumentManager extends RdbmsHoldingsDocumentManager imple
         item.setDescriptionOfPieces(itemRecord.getDescriptionOfPieces());
         item.setCheckinNote(itemRecord.getCheckInNote());
         item.setLocation(getLocationDetails(itemRecord.getLocation(), itemRecord.getLocationLevel()));
-        if (itemRecord.getFormerIdentifierRecords() != null) {
+        if (CollectionUtils.isNotEmpty(itemRecord.getFormerIdentifierRecords())) {
             List<FormerIdentifier> formerIdList = new ArrayList<FormerIdentifier>();
             for (FormerIdentifierRecord formerIdentifierRecord : itemRecord.getFormerIdentifierRecords()) {
                 FormerIdentifier formerIdentifier = new FormerIdentifier();
@@ -334,7 +334,7 @@ public class RdbmsItemDocumentManager extends RdbmsHoldingsDocumentManager imple
         item.setCallNumber(itemCallNumber);
 
         List<Note> notes = new ArrayList<Note>();
-        if (itemRecord.getItemNoteRecords() != null) {
+        if (CollectionUtils.isNotEmpty(itemRecord.getItemNoteRecords())) {
             List<ItemNoteRecord> itemNoteRecords = itemRecord.getItemNoteRecords();
             for (ItemNoteRecord itemNoteRecord : itemNoteRecords) {
                 Note note = new Note();
@@ -916,9 +916,10 @@ public class RdbmsItemDocumentManager extends RdbmsHoldingsDocumentManager imple
                 dueDateItem = dueDateItem + " 00:00:00";
                 dueDateTime(item, itemRecord, dueDateItem);
             } else if (dueDateItemArray.length > 1) {
+                if(dueDateItemArray.length == 3){
+                    dueDateItem = dueDateItemArray[0] + " " + dueDateItemArray[1] + dueDateItemArray[2];
+                }
                 dueDateTime(item, itemRecord, dueDateItem);
-            } else {
-                itemRecord.setDueDateTime(null);
             }
         } else {
             itemRecord.setDueDateTime(null);
@@ -930,9 +931,10 @@ public class RdbmsItemDocumentManager extends RdbmsHoldingsDocumentManager imple
                 originalDueDateTime = originalDueDateTime + DESCRIBE_EFFECTIVE_DATE;
                 originalDueDateTime(item,itemRecord,originalDueDateTime);
             } else if (originalDueDateTimeArray.length > 1) {
+                if(originalDueDateTimeArray.length == 3){
+                    originalDueDateTime = originalDueDateTimeArray[0] + " " + originalDueDateTimeArray[1] + originalDueDateTimeArray[2];
+                }
                 originalDueDateTime(item,itemRecord,originalDueDateTime);
-            } else {
-                itemRecord.setOriginalDueDate(null);
             }
         } else {
             itemRecord.setOriginalDueDate(null);
@@ -944,6 +946,9 @@ public class RdbmsItemDocumentManager extends RdbmsHoldingsDocumentManager imple
                 checkOutDateItem = checkOutDateItem + " 00:00:00";
                 itemRecord.setCheckOutDateTime(convertDateToTimeStamp(checkOutDateItem));
             } else if (dueDateItemArray.length > 1) {
+                if(dueDateItemArray.length == 3){
+                    checkOutDateItem = dueDateItemArray[0] + " " + dueDateItemArray[1] + dueDateItemArray[2];
+                }
                 itemRecord.setCheckOutDateTime(convertDateToTimeStamp(checkOutDateItem));
             } else {
                 itemRecord.setCheckOutDateTime(null);
@@ -969,8 +974,6 @@ public class RdbmsItemDocumentManager extends RdbmsHoldingsDocumentManager imple
                 effectiveDateItem(item, itemRecord, effectiveDateForItem);
             } else if (effectiveDateForItemArray.length > 1) {
                 effectiveDateItem(item, itemRecord, effectiveDateForItem);
-            } else {
-                itemRecord.setEffectiveDate(null);
             }
         } else {
             itemRecord.setEffectiveDate(null);
@@ -1240,7 +1243,9 @@ public class RdbmsItemDocumentManager extends RdbmsHoldingsDocumentManager imple
 
     private void dueDateTime(org.kuali.ole.docstore.common.document.content.instance.Item item, ItemRecord itemRecord, String dueDateTime) {
         Timestamp dueDateTime1 = convertDateToTimeStamp(dueDateTime);
-        itemRecord.setDueDateTime(dueDateTime1);
+        if(dueDateTime1!=null) {
+            itemRecord.setDueDateTime(dueDateTime1);
+        }
     }
 
 
@@ -1254,7 +1259,7 @@ public class RdbmsItemDocumentManager extends RdbmsHoldingsDocumentManager imple
         String DATE_FORMAT_AM_PM_REGX = "^(1[0-2]|0[1-9])/(3[0|1]|[1|2][0-9]|0[1-9])/[0-9]{4}(\\s)(00|1[012]|0[1-9]):[0-5][0-9]:[0-5][0-9]?(?i)(am|pm)";
         String DATE_FORMAT_HH_MM_SS_REGX = "^(1[0-2]|0[1-9])/(3[0|1]|[1|2][0-9]|0[1-9])/[0-9]{4}(\\s)((([1|0][0-9])|([2][0-4]))):[0-5][0-9]:[0-5][0-9]$";
         if (StringUtils.isNotBlank(dateString) && dateString.matches(DATE_FORMAT_AM_PM_REGX)) {
-            DateFormat df = new SimpleDateFormat("dd/MM/yyyy hh:mm:ssa");
+            DateFormat df = new SimpleDateFormat("MM/dd/yyyy hh:mm:ssa");
             try {
                 if (!"".equals(dateString) && dateString != null) {
                     dueDateTime1 = new Timestamp(df.parse(dateString).getTime());

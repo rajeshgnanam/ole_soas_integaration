@@ -98,7 +98,7 @@ public class HoldingIndexer extends OleDsNgIndexer {
             solrInputDocument = prepareSolrInputDocument(holdingsRecord);
             assignUUIDs(solrInputDocument);
         } catch (Exception e) {
-            LOG.info("Exception :", e);
+            LOG.info("Exception : "+holdingsRecord.getHoldingsId() + " Location : "+holdingsRecord.getLocation(), e);
             e.printStackTrace();
             throw new DocstoreIndexException(e.getMessage());
         }

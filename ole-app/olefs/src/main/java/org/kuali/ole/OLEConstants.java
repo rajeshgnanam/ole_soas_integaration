@@ -682,6 +682,7 @@ public class OLEConstants {
         public static final String DESTINATION_FIELD_ITEM_STATUS = "Item Status";
         public static final String DESTINATION_FIELD_LINK_TEXT = "Link Text";
         public static final String DESTINATION_FIELD_LINK_URL = "URL";
+        public static final String DESTINATION_FIELD_HOLDINGS_URI_ID = "Holdings Uri Id";
         public static final String DESTINATION_FIELD_PERSISTENTLINK = "Persistent Link";
         public static final String DESTINATION_FIELD_PUBLIC_DISPLAY_NOTE = "Public Display Note";
         public static final String DESTINATION_FIELD_PUBLIC_NOTE = "Public Note";
@@ -691,6 +692,25 @@ public class OLEConstants {
         public static final String DESTINATION_FIELD_COVERAGE_END_DATE = "Coverage End Date";
         public static final String DESTINATION_FIELD_COVERAGE_END_ISSUE = "Coverage End Issue";
         public static final String DESTINATION_FIELD_COVERAGE_END_VOLUME = "Coverage End Volume";
+        public static final String DESTINATION_FIELD_PERPETUAL_ACCESS_START_DATE = "Perpetual Access Start Date";
+        public static final String DESTINATION_FIELD_PERPETUAL_ACCESS_START_ISSUE = "Perpetual Access Start Issue";
+        public static final String DESTINATION_FIELD_PERPETUAL_ACCESS_START_VOLUME = "Perpetual Access Start Volume";
+        public static final String DESTINATION_FIELD_PERPETUAL_ACCESS_END_DATE = "Perpetual Access End Date";
+        public static final String DESTINATION_FIELD_PERPETUAL_ACCESS_END_ISSUE = "Perpetual Access End Issue";
+        public static final String DESTINATION_FIELD_PERPETUAL_ACCESS_END_VOLUME = "Perpetual Access End Volume";
+        public static final String DESTINATION_FIELD_SUBSCRIPTION_STATUS = "Subscription Status";
+        public static final String DESTINATION_FIELD_INITIAL_SUBSCRIPTION_START_DATE = "Initial Subscription Start Date";
+        public static final String DESTINATION_FIELD_CURRENT_SUBSCRIPTION_START_DATE = "Current Subscription Start Date";
+        public static final String DESTINATION_FIELD_CURRENT_SUBSCRIPTION_END_DATE = "Current Subscription End Date";
+        public static final String DESTINATION_FIELD_CANCELLATION_DECISION_DATE =  "Cancellation Decision Date";
+        public static final String DESTINATION_FIELD_CANCELLATION_EFFECTIVE_DATE = "Cancellation Effective Date";
+        public static final String DESTINATION_FIELD_CANCELLATION_REASON = "Cancellation Reason";
+        public static final String DESTINATION_FIELD_NO_OF_SIMULTANEOUS_USERS = "No. of Simultaneous User";
+        public static final String DESTINATION_FIELD_PROXIED_RESOURCE = "Proxied";
+        public static final String DESTINATION_FIELD_ACCESS_LOCATION = "Access Location";
+        public static final String DESTINATION_FIELD_AUTHENTICATION_TYPE = "Authentication Type";
+        public static final String DESTINATION_FIELD_ACCESS_USERNAME = "Access Username";
+        public static final String DESTINATION_FIELD_ACCESS_PASSWORD = "Access Password";
         public static final String DESTINATION_FIELD_STATISTICAL_CODE = "Statistical Code";
         public static final String DESTINATION_FIELD_ACCESS_STATUS_CODE = "Access Status";
         public static final String DESTINATION_FIELD_MATIRIAL_SPECIFIED = "Materials Specified";
@@ -2774,6 +2794,7 @@ public class OLEConstants {
     public static final String INSTANCE_EDITOR_EDIT_ITEM = "INSTANCE_EDITOR_EDIT_ITEM";
     public static final String ERROR_EDIT_INSTANCE = "error.edit.instance";
     public static final String ERROR_EDIT_INSTANCE_HOLDINGS_UPDATED = "error.edit.update.holdingsitem";
+    public static final String ERROR_EDIT_INSTANCE_HOLDINGS_URI_LENGTH = "error.edit.instance.holdings.uri.length";
     public static final String ERROR_EDIT_ITEM = "error.edit.item";
     public static final String BATCH_PROCESS_DELETE = "BATCH_PROCESS_DELETE";
     public static final String DESCRIBE_SEARCH_MESSAGE = "error.results.not.found";
@@ -3141,21 +3162,21 @@ public class OLEConstants {
     }
 
     public static final class AgressoCreateFile{
-        public static final String INTER_FACE = getParameterAgresso("INTER_FACE");
+        public static final String INTER_FACE = "INTER_FACE";
         public static final String FOREIGN_VOUCHER_TYPE = "FL";
         public static final String LOCAL_VOUCHER_TYPE = "UL";
-        public static final String INVOICE_TRANS_TYPE = getParameterAgresso("INVOICE_TRANS_TYPE");
-        public static final String ITEM_TRANS_TYPE = getParameterAgresso("ITEM_TRANS_TYPE");
-        public static final String CLIENT = getParameterAgresso("CLIENT");
-        public static final String INVOICEACCOUNT = getParameterAgresso("INVOICEACCOUNT");
+        public static final String INVOICE_TRANS_TYPE = "INVOICE_TRANS_TYPE";
+        public static final String ITEM_TRANS_TYPE = "ITEM_TRANS_TYPE";
+        public static final String CLIENT = "CLIENT";
+        public static final String INVOICEACCOUNT = "INVOICEACCOUNT";
         public static final String BLANK = " ";
-        public static final String TAXCODE = getParameterAgresso("TAXCODE");
-        public static final String STATUS = getParameterAgresso("STATUS");
-        public static final String APARTYPE = getParameterAgresso("APARTYPE");
-        public static final String RESPONSIBLE = getParameterAgresso("RESPONSIBLE");
+        public static final String TAXCODE = "TAXCODE";
+        public static final String STATUS = "STATUS";
+        public static final String APARTYPE = "APARTYPE";
+        public static final String RESPONSIBLE = "RESPONSIBLE";
         public static final String LASTBATCHJOBRUNDATE = "LAST_RUN_DATE_AGRESSOFILE";
         public static final String CURRENCYCODE = "GBP";
-        public static final String GBP_INVOICES_EXTERNAL_DELIVERY_DIRECTORY = getParameterAgresso("GBP_INVOICES_EXTERNAL_DELIVERY_DIRECTORY");
+        public static final String GBP_INVOICES_EXTERNAL_DELIVERY_DIRECTORY = "GBP_INVOICES_EXTERNAL_DELIVERY_DIRECTORY";
     }
     public static final class OleSerialReceivingTypeLoader {
         public static final String SER_RCPT_HIS_REC_ID = "SER_RCPT_HIS_REC_ID";
@@ -3533,16 +3554,6 @@ public class OLEConstants {
         Parameter parameter = CoreServiceApiServiceLocator.getParameterRepositoryService().getParameter(parameterKey);
         if(parameter==null){
             parameterKey = ParameterKey.create(OLEConstants.APPL_ID_OLE, OLEConstants.DLVR_NMSPC, OLEConstants.DLVR_CMPNT,name);
-            parameter = CoreServiceApiServiceLocator.getParameterRepositoryService().getParameter(parameterKey);
-        }
-        return parameter!=null?parameter.getValue():null;
-    }
-
-    public static String getParameterAgresso(String name) {
-        ParameterKey parameterKey = ParameterKey.create(OLEConstants.APPL_ID, OLEConstants.SELECT_NMSPC, OLEConstants.SELECT_CMPNT,name);
-        Parameter parameter = CoreServiceApiServiceLocator.getParameterRepositoryService().getParameter(parameterKey);
-        if(parameter==null){
-            parameterKey = ParameterKey.create(OLEConstants.APPL_ID_OLE, OLEConstants.SELECT_NMSPC, OLEConstants.SELECT_CMPNT,name);
             parameter = CoreServiceApiServiceLocator.getParameterRepositoryService().getParameter(parameterKey);
         }
         return parameter!=null?parameter.getValue():null;
@@ -4004,5 +4015,19 @@ public class OLEConstants {
     public static final String PICKUP_NOTICE_SUBJECT_LINE="Library Item Available for Pickup";
     public static final String ZERO_ENCUMBRANCE_CHECK = "ZERO_ENCUMBRANCE_CHECK";
     public static final String HOLIDAY = "Holiday";
+
+    public static final String View_Alter_Due_Date_Button ="View Alter Due Date Button";
+    public static final String View_Claims_Return_Button = "View Claims Return Button";
+    public static final String View_Replace_Copy_Button = "View Replace Copy Button";
+    public static final String View_Bill_Item_As_Lost_Button = "View Bill Item as Lost Button";
+    public static final String View_Missing_Piece_Button = "View Missing Piece Button";
+    public static final String View_Damaged_Button = "View Damaged Button";
+
+    public static final String View_Cancel_Button = "View Cancel Button";
+    public static final String View_Cancel_Credit_Button = "View Cancel Credit Button";
+    public static final String View_Error_Button = "View Error Button";
+    public static final String View_Claims_Return_Screen = "View Claims Return Screen";
+    public static final String Override_Patron_Block = "Override Patron Block";
+    public static final String Override_Renew = "Override Renew";
 
 }

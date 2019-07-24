@@ -56,6 +56,7 @@ public class OleNGBatchJobScheduler extends OleNGSchedulerHelperUtil {
     private  DeliverNoticeFileProcessor deliverNoticeFileProcessor;
 
 
+
     @Autowired
     private DescribeDAO describeDAO;
     

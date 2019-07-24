@@ -5,6 +5,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.kuali.ole.OLEConstants;
+import org.kuali.ole.deliver.form.PatronGlobalEditForm;
+import org.kuali.ole.deliver.service.OLEDeliverService;
 import org.kuali.ole.ingest.FileUtil;
 import org.kuali.ole.ingest.OlePatronRecordHandler;
 import org.kuali.ole.ingest.OlePatronXMLSchemaValidator;
@@ -1412,5 +1414,87 @@ public class OlePatronConverterService {
             }
         }
         return valid;
+    }
+
+    public EntityNameBo getName(OlePatronDocument olePatronDocument,PatronGlobalEditForm patronGlobalEditForm){
+        EntityBo entityBo = olePatronDocument.getEntity();
+        if(entityBo!=null){
+            List<EntityNameBo> nameList = entityBo.getNames();
+            if(CollectionUtils.isNotEmpty(nameList)){
+                for(EntityNameBo entityNameBo:nameList){
+                    if(entityNameBo.getDefaultValue()){
+                        if(patronGlobalEditForm.getNamePrefix()!=null && !patronGlobalEditForm.getNamePrefix().isEmpty()) {
+                            entityNameBo.setNamePrefix(patronGlobalEditForm.getNamePrefix());
+                        }
+                        if(patronGlobalEditForm.getNameSuffix()!=null && !patronGlobalEditForm.getNameSuffix().isEmpty()) {
+                            entityNameBo.setNameSuffix(patronGlobalEditForm.getNameSuffix());
+                        }
+                        return entityNameBo;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+
+    public List<OlePatronDocument> saveGlobalEditPatrons(List<String> patronIds, PatronGlobalEditForm patronGlobalEditForm) throws Exception{
+        List<OlePatronDocument> modifiedPatrons = new ArrayList<OlePatronDocument>();
+        Map<String,List<String>> patronIdMap = new HashMap<>();
+        List<EntityNameBo> nameList = new ArrayList<>();
+        List<OlePatronDocument> selectedPatrons = new ArrayList<>();
+        List<OlePatronDocument> savedPatrons = new ArrayList<>();
+        List<OlePatronNotes> patronNoteList = new ArrayList<>();
+        patronIdMap.put("olePatronId",patronIds);
+        BusinessObjectService businessObjectService = KRADServiceLocator.getBusinessObjectService();
+        selectedPatrons = (List<OlePatronDocument>) businessObjectService.findMatching(OlePatronDocument.class,patronIdMap);
+        for(OlePatronDocument olePatronDocument : selectedPatrons){
+            if(patronGlobalEditForm.getBorrowerType()!=null && !patronGlobalEditForm.getBorrowerType().isEmpty()){
+                olePatronDocument.setBorrowerType(patronGlobalEditForm.getBorrowerType());
+            }
+            if(patronGlobalEditForm.getActivationDate()!=null ){
+                olePatronDocument.setActivationDate(patronGlobalEditForm.getActivationDate());
+            }
+            if(patronGlobalEditForm.getExpirationDate()!=null){
+                olePatronDocument.setExpirationDate(patronGlobalEditForm.getExpirationDate());
+            }
+            if(patronGlobalEditForm.getSource()!=null && !patronGlobalEditForm.getSource().isEmpty()){
+                olePatronDocument.setSource(patronGlobalEditForm.getSource() );
+            }
+
+            olePatronDocument.setActiveIndicator(patronGlobalEditForm.isActiveIndicator());
+
+            if(patronGlobalEditForm.getStatisticalCategory()!=null && !patronGlobalEditForm.getStatisticalCategory().isEmpty()){
+                olePatronDocument.setStatisticalCategory(patronGlobalEditForm.getStatisticalCategory());
+            }
+            if((patronGlobalEditForm.getNamePrefix()!=null && !patronGlobalEditForm.getNamePrefix().isEmpty()) ||
+                    (patronGlobalEditForm.getNameSuffix()!=null && !patronGlobalEditForm.getNameSuffix().isEmpty())){
+                EntityNameBo entityNameBo = getName(olePatronDocument,patronGlobalEditForm);
+                if(entityNameBo!=null){
+                    nameList.add(entityNameBo);
+                }
+            }
+            modifiedPatrons.add(olePatronDocument);
+            if(patronGlobalEditForm.getPatronNoteText()!=null && !patronGlobalEditForm.getPatronNoteText().isEmpty()){
+                OlePatronNotes olePatronNote = new OlePatronNotes();
+                olePatronNote.setOlePatronId(olePatronDocument.getOlePatronId());
+                olePatronNote.setPatronNoteTypeId(patronGlobalEditForm.getPatronNoteTypeId());
+                olePatronNote.setPatronNoteText(patronGlobalEditForm.getPatronNoteText());
+                olePatronNote.setNoteCreatedOrUpdatedDate(new Timestamp(System.currentTimeMillis()));
+                olePatronNote.setOperatorId(GlobalVariables.getUserSession().getPrincipalId());
+                olePatronNote.setActive(true);
+                patronNoteList.add(olePatronNote);
+            }
+        }
+        if(patronNoteList.size()>0) {
+            businessObjectService.save(patronNoteList);
+        }
+        if(nameList.size()>0) {
+            businessObjectService.save(nameList);
+        }
+        if(modifiedPatrons.size()>0) {
+            savedPatrons = (List<OlePatronDocument>) businessObjectService.save(modifiedPatrons);
+        }
+        return savedPatrons;
     }
 }

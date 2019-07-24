@@ -705,14 +705,37 @@ public class PurapAccountingServiceImpl implements PurapAccountingService {
                 if (exchangeRate == BigDecimal.ZERO && currentItem instanceof OleInvoiceItem && ((OleInvoiceItem) currentItem).getItemExchangeRate() != null) {
                     exchangeRate = ((OleInvoiceItem) currentItem).getItemExchangeRate();
                 }
-                if (currentItem instanceof OleInvoiceItem) {
+                if(currentItem instanceof OleInvoiceItem) {
                     OleInvoiceItem invoiceItem = (OleInvoiceItem) currentItem;
-                    if (invoiceItem.getItemForeignListPrice() != null) {
-                        totalForeignAmount = totalForeignAmount.add(invoiceItem.getItemForeignListPrice().bigDecimalValue().multiply(invoiceItem.getItemQuantity().bigDecimalValue()));
+                    if(invoiceItem.getItemForeignListPrice() != null ) {
+                        if(invoiceItem.getItemForeignDiscount() != null) {
+                            BigDecimal discountAmount = invoiceItem.getItemForeignDiscount().bigDecimalValue();
+                            if(invoiceItem.getItemForeignDiscountType() != null && invoiceItem.getItemForeignDiscountType().equals("%")) {
+                                if (new KualiDecimal(invoiceItem.getForeignDiscount()).isNonZero()) {
+                                    discountAmount = ((invoiceItem.getItemForeignListPrice().bigDecimalValue()).multiply(new BigDecimal(invoiceItem.getForeignDiscount())).divide(new BigDecimal(100)));
+                                }
+                            }
+                            totalForeignAmount = totalForeignAmount.add(invoiceItem.getItemForeignListPrice().bigDecimalValue().subtract(discountAmount));
+                        }
+                        else {
+                            totalForeignAmount = totalForeignAmount.add(invoiceItem.getItemForeignListPrice().bigDecimalValue());
+                        }
                     } else if (invoiceItem.getItemForeignUnitCost() != null) {
-                        totalForeignAmount = totalForeignAmount.add(invoiceItem.getItemForeignUnitCost().bigDecimalValue().multiply(invoiceItem.getItemQuantity().bigDecimalValue()));
+                        if (invoiceItem.getItemForeignDiscount() != null) {
+                            BigDecimal discountAmount = invoiceItem.getItemForeignDiscount().bigDecimalValue();
+                            if (invoiceItem.getItemForeignDiscountType().equals("%")) {
+                                if (new KualiDecimal(invoiceItem.getForeignDiscount()).isNonZero()) {
+                                    discountAmount = ((invoiceItem.getItemForeignUnitCost().bigDecimalValue()).multiply(new BigDecimal(invoiceItem.getForeignDiscount())).divide(new BigDecimal(100)));
+                                }
+                            }
+                            totalForeignAmount = totalForeignAmount.add(invoiceItem.getItemForeignUnitCost().bigDecimalValue().subtract(discountAmount));
+                        }
+                        else {
+                            totalForeignAmount = totalForeignAmount.add(invoiceItem.getItemForeignUnitCost().bigDecimalValue());
+                        }
                     }
                 }
+                totalForeignAmount = new KualiDecimal(totalForeignAmount).bigDecimalValue();
                 if (PurApItemUtils.checkItemActive(currentItem)) {
                     List<PurApAccountingLine> sourceAccountingLines = currentItem.getSourceAccountingLines();
 
@@ -891,11 +914,34 @@ public class PurapAccountingServiceImpl implements PurapAccountingService {
             if(currentItem instanceof OleInvoiceItem) {
                 OleInvoiceItem invoiceItem = (OleInvoiceItem) currentItem;
                 if(invoiceItem.getItemForeignListPrice() != null ) {
-                    totalForeignAmount = totalForeignAmount.add(invoiceItem.getItemForeignListPrice().bigDecimalValue().multiply(invoiceItem.getItemQuantity().bigDecimalValue()));
+                    if(invoiceItem.getItemForeignDiscount() != null) {
+                        BigDecimal discountAmount = invoiceItem.getItemForeignDiscount().bigDecimalValue();
+                        if(invoiceItem.getItemForeignDiscountType() != null && invoiceItem.getItemForeignDiscountType().equals("%")) {
+                            if (new KualiDecimal(invoiceItem.getForeignDiscount()).isNonZero()) {
+                                discountAmount = ((invoiceItem.getItemForeignListPrice().bigDecimalValue()).multiply(new BigDecimal(invoiceItem.getForeignDiscount())).divide(new BigDecimal(100)));
+                            }
+                        }
+                        totalForeignAmount = totalForeignAmount.add(invoiceItem.getItemForeignListPrice().bigDecimalValue().subtract(discountAmount));
+                    }
+                    else {
+                        totalForeignAmount = totalForeignAmount.add(invoiceItem.getItemForeignListPrice().bigDecimalValue());
+                    }
                 } else if (invoiceItem.getItemForeignUnitCost() != null) {
-                    totalForeignAmount = totalForeignAmount.add(invoiceItem.getItemForeignUnitCost().bigDecimalValue().multiply(invoiceItem.getItemQuantity().bigDecimalValue()));
+                    if (invoiceItem.getItemForeignDiscount() != null) {
+                        BigDecimal discountAmount = invoiceItem.getItemForeignDiscount().bigDecimalValue();
+                        if (invoiceItem.getItemForeignDiscountType().equals("%")) {
+                            if (new KualiDecimal(invoiceItem.getForeignDiscount()).isNonZero()) {
+                                discountAmount = ((invoiceItem.getItemForeignUnitCost().bigDecimalValue()).multiply(new BigDecimal(invoiceItem.getForeignDiscount())).divide(new BigDecimal(100)));
+                            }
+                        }
+                        totalForeignAmount = totalForeignAmount.add(invoiceItem.getItemForeignUnitCost().bigDecimalValue().subtract(discountAmount));
+                    }
+                    else {
+                        totalForeignAmount = totalForeignAmount.add(invoiceItem.getItemForeignUnitCost().bigDecimalValue());
+                    }
                 }
             }
+            totalForeignAmount = new KualiDecimal(totalForeignAmount).bigDecimalValue();
             if (PurApItemUtils.checkItemActive(currentItem)) {
                 List<PurApAccountingLine> sourceAccountingLines = currentItem.getSourceAccountingLines();
 

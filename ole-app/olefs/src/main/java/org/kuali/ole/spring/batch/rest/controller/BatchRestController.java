@@ -5,16 +5,25 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.annotate.JsonAutoDetect;
+import org.codehaus.jackson.annotate.JsonMethod;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.introspect.VisibilityChecker;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.drools.core.time.impl.CronExpression;
 import org.kuali.ole.OLEConstants;
 import org.kuali.ole.constants.OleNGConstants;
+import org.kuali.ole.deliver.bo.OleBorrowerType;
+import org.kuali.ole.deliver.bo.OlePatronDocument;
+import org.kuali.ole.deliver.bo.OleStatisticalCategoryBo;
+import org.kuali.ole.deliver.service.OLEDeliverService;
 import org.kuali.ole.oleng.batch.process.model.BatchJobDetails;
 import org.kuali.ole.oleng.batch.process.model.BatchProcessJob;
 import org.kuali.ole.oleng.batch.process.model.BatchScheduleJob;
+import org.kuali.ole.oleng.batch.profile.model.BatchProcessProfile;
 import org.kuali.ole.oleng.dao.DescribeDAO;
+import org.kuali.ole.oleng.handler.BatchProfileRequestHandler;
 import org.kuali.ole.oleng.rest.controller.OleNgControllerBase;
 import org.kuali.ole.oleng.scheduler.OleNGBatchJobScheduler;
 import org.kuali.ole.oleng.util.BatchExcelReportUtil;
@@ -22,6 +31,7 @@ import org.kuali.ole.spring.batch.BatchUtil;
 import org.kuali.ole.spring.batch.processor.*;
 import org.kuali.rice.core.api.config.property.ConfigContext;
 import org.kuali.rice.krad.UserSession;
+import org.kuali.rice.krad.service.KRADServiceLocator;
 import org.kuali.rice.krad.util.GlobalVariables;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -31,11 +41,12 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by sheiksalahudeenm on 25/6/15.
@@ -61,7 +72,7 @@ public class BatchRestController extends OleNgControllerBase {
 
     @Autowired
     private DeliverNoticeFileProcessor deliverNoticeFileProcessor;
-    
+
     @Autowired
     private OleNGBatchJobScheduler oleNGBatchJobScheduler;
 
@@ -71,6 +82,9 @@ public class BatchRestController extends OleNgControllerBase {
 
     @Autowired
     private DescribeDAO describeDAO;
+
+    @Autowired
+    private BatchProfileRequestHandler batchProfileRequestHandler;
 
     public DescribeDAO getDescribeDAO() {
         return describeDAO;
@@ -82,10 +96,11 @@ public class BatchRestController extends OleNgControllerBase {
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST, produces = {MediaType. APPLICATION_JSON + OleNGConstants.CHARSET_UTF_8})
     @ResponseBody
-    public String UploadFile(@RequestParam(value = "file", required = false) MultipartFile file, @RequestParam("profileName") String profileName,
-                             @RequestParam("batchType") String batchType, HttpServletRequest request) throws Exception {
+    public String UploadFile(@RequestParam("profileId") String profileId, @RequestParam("profileName") String profileName,
+                             @RequestParam("batchType") String batchType, @RequestParam("numOfRecordsInFile") String numOfRecordsInFile,
+                             @RequestParam("outputFormat") String outputFormat, @RequestParam(value = "file", required = false) MultipartFile file, HttpServletRequest request) throws Exception {
         try {
-            if (StringUtils.isNotBlank(profileName) && StringUtils.isNotBlank(batchType)) {
+            if (StringUtils.isNotBlank(profileId) && StringUtils.isNotBlank(profileName) && StringUtils.isNotBlank(batchType)) {
                 File uploadedDirectory = storeUploadedFileToFileSystem(file, null);
                 if (null != uploadedDirectory) {
                     String originalFilename = null;
@@ -94,12 +109,24 @@ public class BatchRestController extends OleNgControllerBase {
                         originalFilename = file.getOriginalFilename();
                         extension = FilenameUtils.getExtension(originalFilename);
                     }
-                    BatchJobDetails batchJobDetails = new BatchJobDetails();
-                    batchJobDetails.setProfileName(profileName);
-                    batchJobDetails.setFileName(originalFilename);
-                    batchJobDetails.setStartTime(new Timestamp(new Date().getTime()));
-                    batchJobDetails.setStatus(OleNGConstants.RUNNING);                    
-                    JSONObject response = processBatch(uploadedDirectory, batchType, profileName, extension, batchJobDetails);
+                    BatchProcessProfile batchProcessProfile = getBatchProfileRequestHandler().getBatchProcessProfileById(Long.parseLong(profileId));
+                    BatchProcessJob batchProcessJob = new BatchProcessJob();
+                    batchProcessJob.setJobType(OleNGConstants.ADHOC);
+                    batchProcessJob.setProfileType(batchType);
+                    batchProcessJob.setBatchProfileId(Long.parseLong(profileId));
+                    batchProcessJob.setBatchProfileName(batchProcessProfile.getBatchProcessProfileName());
+                    batchProcessJob.setCreatedBy(GlobalVariables.getUserSession().getPrincipalName());
+                    batchProcessJob.setCreatedOn(new Timestamp(new Date().getTime()));
+                    batchProcessJob.setNumOfRecordsInFile(Integer.parseInt(numOfRecordsInFile));
+                    batchProcessJob.setOutputFileFormat(outputFormat);
+                    batchProcessJob.setJobName(batchType);
+                    batchProcessJob.setStatus(OleNGConstants.RUNNING);
+                    getBusinessObjectService().save(batchProcessJob);
+
+                    BatchJobDetails batchJobDetails =  getBatchUtil().createBatchJobDetailsEntry(batchProcessJob, originalFilename);
+                    getBusinessObjectService().save(batchJobDetails);
+
+                    JSONObject response = processBatch(uploadedDirectory, batchType, profileId, extension, batchJobDetails);
                     return response.toString();
                 }
             }
@@ -109,6 +136,76 @@ public class BatchRestController extends OleNgControllerBase {
         }
         return null;
     }
+
+    private JSONObject getJSONPatronDocumentList(List<OlePatronDocument> olePatronDocuments) throws Exception{
+        JSONObject responsePatronList = new JSONObject();
+        JSONArray jsonArray = new JSONArray();
+        if(olePatronDocuments!=null && !olePatronDocuments.isEmpty()) {
+            for (OlePatronDocument olePatronDocument : olePatronDocuments) {
+                olePatronDocument = OLEDeliverService.populatePatronName(olePatronDocument);
+                JSONObject responsePatron = new JSONObject();
+                responsePatron.put("olePatronId", olePatronDocument.getOlePatronId());
+                responsePatron.put("patronName", olePatronDocument.getPatronName());
+                responsePatron.put("studentId", olePatronDocument.getMiddleName());
+                responsePatron.put("barcode", olePatronDocument.getBarcode());
+                responsePatron.put("expirationDate",olePatronDocument.getExpirationDate());
+                responsePatron.put("Pcode1", olePatronDocument.getNamePrefix());
+                responsePatron.put("Pcode2", olePatronDocument.getNameSuffix());
+                responsePatron.put("borrowerType", olePatronDocument.getBorrowerTypeName());
+                responsePatron.put("statisticalCategory", olePatronDocument.getOleStatisticalCategoryName());
+                jsonArray.put(responsePatron);
+            }
+        }
+        return responsePatronList.put("patronList", jsonArray);
+    }
+
+    @RequestMapping(value = "/appendPatron", method = RequestMethod.POST, produces = {MediaType. APPLICATION_JSON + OleNGConstants.CHARSET_UTF_8})
+    @ResponseBody
+    public String appendPatronRecords(@RequestBody String selectedPatronId, HttpServletRequest request) throws Exception {
+        JSONObject jsonObject = new JSONObject(selectedPatronId);
+        JSONArray jsonArray = (JSONArray)jsonObject.get("selectedPatronId");
+        List<String> patronList = new ArrayList<>();
+        if(jsonArray.length()>0) {
+            for (int i = 0; i < jsonArray.length(); i++) {
+                patronList.add((String) jsonArray.get(i));
+            }
+        }
+        request.getSession().setAttribute("selectedPatronId",patronList);
+        System.out.print(selectedPatronId);
+        return "{}";
+    }
+
+    @RequestMapping(value = "/patronImport", method = RequestMethod.POST, produces = {MediaType. APPLICATION_JSON + OleNGConstants.CHARSET_UTF_8})
+    @ResponseBody
+    public String patronImportResults(@RequestParam(value = "file", required = false) MultipartFile file, @RequestParam("patronField") String patronField,
+                             HttpServletRequest request) throws Exception {
+        Map<String,List<String>> patronMap = new HashMap<>();
+        List<String> inputData = new ArrayList<>();
+        JSONObject response = new JSONObject();
+        List<String> patronIds = new ArrayList<>();
+        List<OlePatronDocument> patronList = new ArrayList<>();
+        try {
+            if (file.getOriginalFilename().endsWith(".txt")) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
+                for (String line; (line = reader.readLine()) != null; ) {
+                    if (org.apache.commons.lang.StringUtils.isNotEmpty(line))
+                        inputData.add(line);
+                }
+                if (inputData.size() > 0) {
+                    for (String patronInfo : inputData) {
+                        patronIds.add(patronInfo.trim());
+                    }
+                }
+            }
+            patronMap.put(patronField, patronIds);
+            patronList = (List<OlePatronDocument>) KRADServiceLocator.getBusinessObjectService().findMatching(OlePatronDocument.class, patronMap);
+            response =  getJSONPatronDocumentList(patronList);
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return response.toString();
+    }
+
 
     private JSONObject processBatch(File uploadDirectory, String batchType, String profileId, String fileExtension, BatchJobDetails batchJobDetails) throws Exception {
         BatchFileProcessor batchProcessor = getBatchProcessor(batchType);
@@ -693,5 +790,13 @@ public class BatchRestController extends OleNgControllerBase {
             }
         }
         return false;
+    }
+
+    public BatchProfileRequestHandler getBatchProfileRequestHandler() {
+        return batchProfileRequestHandler;
+    }
+
+    public void setBatchProfileRequestHandler(BatchProfileRequestHandler batchProfileRequestHandler) {
+        this.batchProfileRequestHandler = batchProfileRequestHandler;
     }
 }

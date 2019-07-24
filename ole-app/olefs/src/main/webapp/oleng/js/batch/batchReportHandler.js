@@ -165,6 +165,16 @@ function populateBatchNoticeReportFromContent(fileContent, $scope) {
     $scope.failureLoanAndNoticeResponsePanel = prepareFailureLoanAndNoticeResponses(fileContent)
 }
 
+function populateBatchNoticeReportFromContent(fileContent, $scope) {
+    var batchNoticeReport = getBatchNoticeReportContent(fileContent);
+    $scope.batchDeliverNoticeReportPanel = batchNoticeReport;
+    if(fileContent["failureLoanAndNoticeResponses"] != null) {
+        $scope.failureLoanAndNoticeResponsePanel = prepareFailureLoanAndNoticeResponses(fileContent);
+    }else if(fileContent["failureRequestAndNoticeResponses"] != null){
+        $scope.failureRequestAndNoticeResponsePanel = prepareFailureRequestAndNoticeResponses(fileContent);
+    }
+}
+
 function getMainSectionContent(fileContent) {
     var mainSectionContent = {
         "bibImportProfileName": fileContent["bibImportProfileName"],
@@ -222,6 +232,19 @@ function getBatchNoticeReportContent(fileContent) {
     return batchNoticereport;
 }
 
+function getBatchNoticeReportContent(fileContent) {
+    var batchNoticereport = {
+        "jobDetailId": fileContent["jobDetailId"],
+        "jobName": fileContent["jobName"],
+        "profileName":fileContent["profileName"],
+        "noticeType": fileContent["noticeType"],
+        "totalNoticeCount" : fileContent["totalNoticeCount"],
+        "successNoticeCount": fileContent["successNoticeCount"],
+        "failedNoticeCount": fileContent["failedNoticeCount"]
+    };
+    return batchNoticereport;
+}
+
 function prepareFailureLoanAndNoticeResponses(fileContent){
     var tmpFailureLoanAndNoticeResponse = fileContent["failureLoanAndNoticeResponses"];
     var failureLoanAndNoticeResponses = [];
@@ -236,7 +259,19 @@ function prepareFailureLoanAndNoticeResponses(fileContent){
     return failureLoanAndNoticeResponses;
 }
 
+function prepareFailureRequestAndNoticeResponses(fileContent){
+    var tmpFailureRequestAndNoticeResponse = fileContent["failureRequestAndNoticeResponses"];
+    var failureRequestAndNoticeResponses = [];
+    for(var i = 0; i < tmpFailureRequestAndNoticeResponse.length; i++){
+        var failureRequestAndNoticeResponse = {
+            "failedRequestId" : tmpFailureRequestAndNoticeResponse[i].failedRequestId,
+            "failedNoticeId" : tmpFailureRequestAndNoticeResponse[i].failedNoticeId
+        }
+        failureRequestAndNoticeResponses.push(failureRequestAndNoticeResponse);
+    }
 
+    return failureRequestAndNoticeResponses;
+}
 
 function getMainSectionContentForOrderAndInvoiceImport(fileContent) {
     var mainSectionContent = {

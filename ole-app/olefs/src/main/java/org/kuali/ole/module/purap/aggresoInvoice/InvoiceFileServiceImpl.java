@@ -89,6 +89,16 @@ public class InvoiceFileServiceImpl extends PurapAccountingServiceImpl {
         Map<String, String> accountMap = new HashMap<>();
         Map<String, String> formatTypeMap = new HashMap<>();
 
+        String inter_face = invoiceFileRecord.getParameterAgresso(OLEConstants.AgressoCreateFile.INTER_FACE);
+        String invoiceTransType = invoiceFileRecord.getParameterAgresso(OLEConstants.AgressoCreateFile.INVOICE_TRANS_TYPE);
+        String itemTransType = invoiceFileRecord.getParameterAgresso(OLEConstants.AgressoCreateFile.ITEM_TRANS_TYPE);
+        String client = invoiceFileRecord.getParameterAgresso(OLEConstants.AgressoCreateFile.CLIENT);
+        String invoiceAccount = invoiceFileRecord.getParameterAgresso(OLEConstants.AgressoCreateFile.INVOICEACCOUNT);
+        String taxCode = invoiceFileRecord.getParameterAgresso(OLEConstants.AgressoCreateFile.TAXCODE);
+        String status = invoiceFileRecord.getParameterAgresso(OLEConstants.AgressoCreateFile.STATUS);
+        String aparType = invoiceFileRecord.getParameterAgresso(OLEConstants.AgressoCreateFile.APARTYPE);
+        String responsible = invoiceFileRecord.getParameterAgresso(OLEConstants.AgressoCreateFile.RESPONSIBLE);
+
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.SECOND,0);
         calendar.set(Calendar.MILLISECOND,0);
@@ -152,19 +162,19 @@ public class InvoiceFileServiceImpl extends PurapAccountingServiceImpl {
                             }
 
                             if(StringUtils.isNotBlank(document.getInvoiceNumber())) {
-                                if (!(invoiceVendorAmount.compareTo(new BigDecimal(0)) < 0)) {
+                                //if (!(invoiceVendorAmount.compareTo(new BigDecimal(0)) < 0)) {
                                     extInvoiceReference = document.getInvoiceNumber();
                                     aparId = document.getVendorDetail().getVendorDunsNumber();
                                     batchIdForContent = batchId_Loc;
                                     if (isForeignCurrency(currency)) {
                                         if (document.getForeignVendorInvoiceAmount() != null) {
-                                            invoiceAmount = "-" + document.getForeignVendorInvoiceAmount().multiply(new BigDecimal(100)).setScale(0, BigDecimal.ROUND_DOWN);
+                                            invoiceAmount = document.getForeignVendorInvoiceAmount().multiply(new BigDecimal(100)).multiply(new BigDecimal(-1)).setScale(0, BigDecimal.ROUND_DOWN).toString();
                                             voucherType = OLEConstants.AgressoCreateFile.FOREIGN_VOUCHER_TYPE;
                                             batchIdForContent = batchId_For;
                                         }
                                     } else {
                                         if (document.getVendorInvoiceAmount() != null) {
-                                            invoiceAmount = "-" + new BigDecimal(document.getVendorInvoiceAmount().multiply(new KualiDecimal(100)).toString()).setScale(0, BigDecimal.ROUND_DOWN);
+                                            invoiceAmount = new BigDecimal(document.getVendorInvoiceAmount().multiply(new KualiDecimal(100)).multiply(new KualiDecimal(-1)).toString()).setScale(0, BigDecimal.ROUND_DOWN).toString();
                                             if (document.getVendorDetail().getVendorHeader().getVendorForeignIndicator()) {
                                                 isCheckForeignVendor = false;
                                                 voucherType = OLEConstants.AgressoCreateFile.FOREIGN_VOUCHER_TYPE;
@@ -179,14 +189,14 @@ public class InvoiceFileServiceImpl extends PurapAccountingServiceImpl {
                                     if (document.getInvoicePayDate() != null) {
                                         invoiceDueDate = df.format(document.getInvoicePayDate());
                                     }
-                                    invoiceContent = getFileContent(batchIdForContent, OLEConstants.AgressoCreateFile.INTER_FACE, voucherType, OLEConstants.AgressoCreateFile.INVOICE_TRANS_TYPE, OLEConstants.AgressoCreateFile.CLIENT, OLEConstants.AgressoCreateFile.INVOICEACCOUNT,
-                                            OLEConstants.AgressoCreateFile.BLANK, OLEConstants.AgressoCreateFile.BLANK, OLEConstants.AgressoCreateFile.TAXCODE, currency, (invoiceAmount != null ? invoiceAmount : ""), (invoiceAmount != null ? invoiceAmount : ""),
+                                    invoiceContent = getFileContent(batchIdForContent, inter_face , voucherType, invoiceTransType , client , invoiceAccount ,
+                                            OLEConstants.AgressoCreateFile.BLANK, OLEConstants.AgressoCreateFile.BLANK, taxCode , currency, (invoiceAmount != null ? invoiceAmount : ""), (invoiceAmount != null ? invoiceAmount : ""),
                                             (invoiceDescription != null ? invoiceDescription : ""),
                                             (voucherDate != null ? voucherDate : ""), String.format("%015d", voucherNumber),
                                             (extInvoiceReference != null ? extInvoiceReference : ""),
                                             (invoiceDueDate != null ? invoiceDueDate : ""),
-                                            OLEConstants.AgressoCreateFile.STATUS, OLEConstants.AgressoCreateFile.APARTYPE, (aparId != null ? aparId : "10000"),
-                                            OLEConstants.AgressoCreateFile.RESPONSIBLE) + "\n";
+                                            status, aparType , (aparId != null ? aparId : "10000"),
+                                            responsible) + "\n";
 
                                     if (isForeignCurrency(currency)) {
                                         tmpFileToWriteForeignVendor.append(invoiceContent);
@@ -236,14 +246,14 @@ public class InvoiceFileServiceImpl extends PurapAccountingServiceImpl {
                                                         }
                                                     }
                                                 }
-                                                itemLineContent = getFileContent(batchIdForContent, OLEConstants.AgressoCreateFile.INTER_FACE, voucherType, OLEConstants.AgressoCreateFile.ITEM_TRANS_TYPE,
-                                                        OLEConstants.AgressoCreateFile.CLIENT, itemCostCentre != null ? itemCostCentre : "", OLEConstants.AgressoCreateFile.BLANK,
+                                                itemLineContent = getFileContent(batchIdForContent, inter_face , voucherType, itemTransType ,
+                                                        client, itemCostCentre != null ? itemCostCentre : "", OLEConstants.AgressoCreateFile.BLANK,
                                                         dim_4 != null ? dim_4 : "",
                                                         itemTaxcode, currency, itemAmount != null ? itemAmount : "0",
                                                         itemAmount != null ? itemAmount : "0",
                                                         itemDescription != null ? itemDescription : "",
-                                                        voucherDate, String.format("%015d", voucherNumber), extInvoiceReference, invoiceDueDate, OLEConstants.AgressoCreateFile.STATUS, OLEConstants.AgressoCreateFile.APARTYPE,
-                                                        (aparId != null ? aparId : "10000"), OLEConstants.AgressoCreateFile.RESPONSIBLE) + "\n";
+                                                        voucherDate, String.format("%015d", voucherNumber), extInvoiceReference, invoiceDueDate, status , aparType ,
+                                                        (aparId != null ? aparId : "10000"), responsible) + "\n";
                                                 if (isForeignCurrency(currency)) {
                                                     tmpFileToWriteForeignVendor.append(itemLineContent);
                                                 } else {
@@ -253,14 +263,14 @@ public class InvoiceFileServiceImpl extends PurapAccountingServiceImpl {
                                                     if (purApSummaryItem.getItemTypeCode().equalsIgnoreCase(PurapConstants.ItemTypeCodes.ITEM_TYPE_MISC_CODE) && purApSummaryItem.getItemDescription().equalsIgnoreCase("vat")) {
                                                         itemAmount = "" + new BigDecimal(purApSummaryItem.getEstimatedEncumberanceAmount().multiply(new KualiDecimal(100)).toString()).setScale(0, BigDecimal.ROUND_DOWN);
                                                         invGrandTotalAmt = invGrandTotalAmt.add(new BigDecimal(purApSummaryItem.getEstimatedEncumberanceAmount().multiply(new KualiDecimal(100)).toString()).setScale(0, BigDecimal.ROUND_DOWN));
-                                                        itemLineContent = getFileContent(batchIdForContent, OLEConstants.AgressoCreateFile.INTER_FACE, voucherType, OLEConstants.AgressoCreateFile.ITEM_TRANS_TYPE,
-                                                                OLEConstants.AgressoCreateFile.CLIENT, itemCostCentre != null ? itemCostCentre : "", OLEConstants.AgressoCreateFile.BLANK,
+                                                        itemLineContent = getFileContent(batchIdForContent, inter_face , voucherType, itemTransType ,
+                                                                client, itemCostCentre != null ? itemCostCentre : "", OLEConstants.AgressoCreateFile.BLANK,
                                                                 dim_4 != null ? dim_4 : "",
                                                                 itemTaxcode, currency, itemAmount != null ? itemAmount : "0",
                                                                 itemAmount != null ? itemAmount : "0",
                                                                 itemDescription != null ? itemDescription : "",
-                                                                voucherDate, String.format("%015d", voucherNumber), extInvoiceReference, invoiceDueDate, OLEConstants.AgressoCreateFile.STATUS, OLEConstants.AgressoCreateFile.APARTYPE,
-                                                                (aparId != null ? aparId : "10000"), OLEConstants.AgressoCreateFile.RESPONSIBLE) + "\n";
+                                                                voucherDate, String.format("%015d", voucherNumber), extInvoiceReference, invoiceDueDate, status , aparType ,
+                                                                (aparId != null ? aparId : "10000"), responsible) + "\n";
                                                         if (isForeignCurrency(currency)) {
                                                             tmpFileToWriteForeignVendor.append(itemLineContent);
                                                         } else {
@@ -281,7 +291,7 @@ public class InvoiceFileServiceImpl extends PurapAccountingServiceImpl {
                                             addErrFile = false;
                                         }
                                     }
-                                }else{
+                                /*}else{
                                     tmpFileToWriteErrorInvoice.append("Invoice Negative::  \n");
                                     tmpFileToWriteErrorInvoice.append("Vendor Invoice Number      :" + document.getInvoiceNumber() + "\n");
                                     tmpFileToWriteErrorInvoice.append("Invoice Document Number    :" + document.getDocumentNumber() + "\n");
@@ -289,7 +299,7 @@ public class InvoiceFileServiceImpl extends PurapAccountingServiceImpl {
                                     tmpFileToWriteErrorInvoice.append("Invoice Items Total Amount :" + invGrandTotalAmt + "\n\n");
                                     addFileInfo =false;
                                     addErrFile = false;
-                                }
+                                }*/
                             } else {
                                 tmpFileToWriteErrorInvoice.append("Vendor Invoice Number is empty ::  \n");
                                 tmpFileToWriteErrorInvoice.append("Invoice Document Number    :" + document.getDocumentNumber() + "\n");
@@ -326,13 +336,12 @@ public class InvoiceFileServiceImpl extends PurapAccountingServiceImpl {
                 }
             }
         }
-        try{
+        /*try{
             creditMemoDocumentIds = exportDao.getDocumentIds(invoiceExtractDate,PurapConstants.PurapDocTypeCodes.CREDIT_MEMO_DOCUMENT);
         }catch (SQLException sqlEx){
             sqlEx.printStackTrace();
         }
-        if(CollectionUtils.isNotEmpty(creditMemoDocumentIds)) {
-            Map<String, Object> creditMemoMap = new HashMap<String, Object>();
+        if(CollectionUtils.isNotEmpty(creditMemoDocumentIds)) {Map<String, Object> creditMemoMap = new HashMap<String, Object>();
             creditMemoMap.put("documentNumber", creditMemoDocumentIds);
             List<VendorCreditMemoDocument> vendorCreditMemoDocumentList = (List<VendorCreditMemoDocument>) KRADServiceLocator.getBusinessObjectService().findMatching(VendorCreditMemoDocument.class, creditMemoMap);
             if (vendorCreditMemoDocumentList.size() > 0) {
@@ -380,28 +389,28 @@ public class InvoiceFileServiceImpl extends PurapAccountingServiceImpl {
                                 }
                                 if (costCentre.equalsIgnoreCase("4025") || costCentre.equalsIgnoreCase("4026")) {
                                     if (isForeignCurrency(currencyAlphaCode)) {
-                                        fileToWriteForeignVendor.append(getFileContent(batchId_For, OLEConstants.AgressoCreateFile.INTER_FACE, OLEConstants.AgressoCreateFile.FOREIGN_VOUCHER_TYPE, OLEConstants.AgressoCreateFile.INVOICE_TRANS_TYPE,
-                                                OLEConstants.AgressoCreateFile.CLIENT, OLEConstants.AgressoCreateFile.INVOICEACCOUNT, OLEConstants.AgressoCreateFile.BLANK, OLEConstants.AgressoCreateFile.BLANK, OLEConstants.AgressoCreateFile.TAXCODE, currencyAlphaCode, (creditmemoAmt != null ? creditmemoAmt : ""),
+                                        fileToWriteForeignVendor.append(getFileContent(batchId_For, inter_face , OLEConstants.AgressoCreateFile.FOREIGN_VOUCHER_TYPE, invoiceTransType ,
+                                                client, invoiceAccount , OLEConstants.AgressoCreateFile.BLANK, OLEConstants.AgressoCreateFile.BLANK, taxCode , currencyAlphaCode, (creditmemoAmt != null ? creditmemoAmt : ""),
                                                 (creditmemoAmt != null ? creditmemoAmt : ""), invoiceDescription, voucherDate, String.format("%015d", voucherNumber), creditMemoNumber, voucherDate,
-                                                voucherDate, OLEConstants.AgressoCreateFile.APARTYPE, (aparId != null ? aparId : "10000"), OLEConstants.AgressoCreateFile.RESPONSIBLE) + "\n");
-                                        fileToWriteForeignVendor.append(getFileContent(batchId_For, OLEConstants.AgressoCreateFile.INTER_FACE, OLEConstants.AgressoCreateFile.FOREIGN_VOUCHER_TYPE, OLEConstants.AgressoCreateFile.ITEM_TRANS_TYPE,
-                                                OLEConstants.AgressoCreateFile.CLIENT, costCentre, OLEConstants.AgressoCreateFile.BLANK, account, itemTaxcode, currencyAlphaCode, (creditMemoItemAmt != null ? creditMemoItemAmt : ""),
+                                                voucherDate, aparType , (aparId != null ? aparId : "10000"), responsible) + "\n");
+                                        fileToWriteForeignVendor.append(getFileContent(batchId_For, inter_face , OLEConstants.AgressoCreateFile.FOREIGN_VOUCHER_TYPE, itemTransType ,
+                                                client, costCentre, OLEConstants.AgressoCreateFile.BLANK, account, itemTaxcode, currencyAlphaCode, (creditMemoItemAmt != null ? creditMemoItemAmt : ""),
                                                 (creditMemoItemAmt != null ? creditMemoItemAmt : ""), description, voucherDate, String.format("%015d", voucherNumber), creditMemoNumber, voucherDate,
-                                                voucherDate, OLEConstants.AgressoCreateFile.APARTYPE, (aparId != null ? aparId : "10000"), OLEConstants.AgressoCreateFile.RESPONSIBLE) + "\n");
+                                                voucherDate, aparType , (aparId != null ? aparId : "10000"), responsible) + "\n");
                                     } else {
                                         if (costCentre.equalsIgnoreCase("4025") && isCheckForeignVendor) {
                                             itemTaxcode = "Z";
                                         } else if (isCheckForeignVendor) {
                                             itemTaxcode = "SP";
                                         }
-                                        fileToWriteLocalVendor.append(getFileContent(batchId_Loc, OLEConstants.AgressoCreateFile.INTER_FACE, OLEConstants.AgressoCreateFile.LOCAL_VOUCHER_TYPE, OLEConstants.AgressoCreateFile.INVOICE_TRANS_TYPE,
-                                                OLEConstants.AgressoCreateFile.CLIENT, OLEConstants.AgressoCreateFile.INVOICEACCOUNT, OLEConstants.AgressoCreateFile.BLANK, OLEConstants.AgressoCreateFile.BLANK, OLEConstants.AgressoCreateFile.TAXCODE, currencyAlphaCode, (creditmemoAmt != null ? creditmemoAmt : ""),
+                                        fileToWriteLocalVendor.append(getFileContent(batchId_Loc, inter_face , OLEConstants.AgressoCreateFile.LOCAL_VOUCHER_TYPE, invoiceTransType ,
+                                                client, invoiceAccount , OLEConstants.AgressoCreateFile.BLANK, OLEConstants.AgressoCreateFile.BLANK, taxCode , currencyAlphaCode, (creditmemoAmt != null ? creditmemoAmt : ""),
                                                 (creditmemoAmt != null ? creditmemoAmt : ""), invoiceDescription, voucherDate, String.format("%015d", voucherNumber), creditMemoNumber, voucherDate,
-                                                OLEConstants.AgressoCreateFile.STATUS, OLEConstants.AgressoCreateFile.APARTYPE, (aparId != null ? aparId : "10000"), OLEConstants.AgressoCreateFile.RESPONSIBLE) + "\n");
-                                        fileToWriteLocalVendor.append(getFileContent(batchId_Loc, OLEConstants.AgressoCreateFile.INTER_FACE, voucherType, OLEConstants.AgressoCreateFile.ITEM_TRANS_TYPE,
-                                                OLEConstants.AgressoCreateFile.CLIENT, costCentre, OLEConstants.AgressoCreateFile.BLANK, account, itemTaxcode, currencyAlphaCode, (creditMemoItemAmt != null ? creditMemoItemAmt : ""),
+                                                status , aparType , (aparId != null ? aparId : "10000"), responsible) + "\n");
+                                        fileToWriteLocalVendor.append(getFileContent(batchId_Loc, inter_face , voucherType, itemTransType ,
+                                                client, costCentre, OLEConstants.AgressoCreateFile.BLANK, account, itemTaxcode, currencyAlphaCode, (creditMemoItemAmt != null ? creditMemoItemAmt : ""),
                                                 (creditMemoItemAmt != null ? creditMemoItemAmt : ""), description, voucherDate, String.format("%015d", voucherNumber), creditMemoNumber, voucherDate,
-                                                OLEConstants.AgressoCreateFile.STATUS, OLEConstants.AgressoCreateFile.APARTYPE, (aparId != null ? aparId : "10000"), OLEConstants.AgressoCreateFile.RESPONSIBLE) + "\n");
+                                                status, aparType , (aparId != null ? aparId : "10000"), responsible) + "\n");
                                     }
                                     try {
                                         vendorCreditMemoDocument.setExtractedTimestamp(new Timestamp(dbFormat.parse(invoiceExtractDate).getTime()));
@@ -417,8 +426,8 @@ public class InvoiceFileServiceImpl extends PurapAccountingServiceImpl {
                     }
                 }
             }
-        }
-        String path = OLEConstants.AgressoCreateFile.GBP_INVOICES_EXTERNAL_DELIVERY_DIRECTORY;
+        }*/
+        String path = invoiceFileRecord.getParameterAgresso(OLEConstants.AgressoCreateFile.GBP_INVOICES_EXTERNAL_DELIVERY_DIRECTORY);
         try {
             if(fileToWriteLocalVendor.length() != 0) {
                 generateFileForContent(fileToWriteLocalVendor, "LibraryInvoices_" + batchId.concat("_local"), "/Agresso/");

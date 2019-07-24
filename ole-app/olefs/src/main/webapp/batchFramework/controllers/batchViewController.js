@@ -206,6 +206,15 @@ batchProfileApp.controller('batchProfileController', ['$scope', '$http', functio
         }
     };
 
+    $scope.deliverNoticeEditRow = function(index) {
+        if($scope.rowToEdit == null || $scope.rowToEdit == undefined){
+            $scope.rowToEdit = getDeliverNoticeRowByIndex(index);
+            $scope.deliverNoticePanel[index].isAddLine = false;
+            $scope.deliverNoticePanel[index].isEdit = true;
+            $scope.deliverNoticePanel[index].deliverNoticeName = $scope.deliverNoticePanel[index].deliverNoticeName;
+        }
+    };
+
     function getMatchPointType(type) {
         if (type == 'Holdings') {
             return matchPointObject.matchPointTypeForHoldings;
@@ -248,6 +257,13 @@ batchProfileApp.controller('batchProfileController', ['$scope', '$http', functio
         $scope.matchPointsPanel[index].isEdit = false;
         $scope.matchPointsPanel[index] = $scope.rowToEdit;
         $scope.matchPointsPanel[index].isAddLine = true;
+        $scope.rowToEdit = null;
+    };
+
+    $scope.deliverNoticeCancelUpdate = function(index) {
+        $scope.deliverNoticePanel[index].isEdit = false;
+        $scope.deliverNoticePanel[index] = $scope.rowToEdit;
+        $scope.deliverNoticePanel[index].isAddLine = true;
         $scope.rowToEdit = null;
     };
 
