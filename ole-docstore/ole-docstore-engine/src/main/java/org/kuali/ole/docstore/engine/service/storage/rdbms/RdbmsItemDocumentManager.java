@@ -908,7 +908,7 @@ public class RdbmsItemDocumentManager extends RdbmsHoldingsDocumentManager imple
         saveItemClaimsReturnedRecords(itemRecord, item);
 
         String dueDateItem = item.getDueDateTime();
-        if (dueDateItem != null) {
+        if (dueDateItem != null && !dueDateItem.isEmpty()) {
             //Timestamp timestamp = new Timestamp(item.getDueDateTime().toGregorianCalendar().getTimeInMillis());
             //itemRecord.setDueDateTime(timestamp);
             String[] dueDateItemArray = dueDateItem.split(" ");
