@@ -18,6 +18,9 @@ import org.kuali.ole.docstore.engine.service.search.DocstoreSearchService;
 import org.kuali.ole.docstore.engine.service.search.DocstoreSolrSearchService;
 import org.kuali.ole.docstore.engine.service.storage.DocstoreRDBMSStorageService;
 import org.kuali.ole.docstore.engine.service.storage.DocstoreStorageService;
+import org.kuali.ole.docstore.engine.service.storage.rdbms.RdbmsHoldingsDocumentManager;
+import org.kuali.ole.docstore.engine.service.storage.rdbms.pojo.HoldingsRecord;
+import org.kuali.ole.docstore.engine.service.storage.rdbms.pojo.ItemRecord;
 import org.kuali.ole.docstore.model.enums.DocCategory;
 import org.kuali.ole.docstore.model.enums.DocFormat;
 import org.kuali.ole.docstore.model.enums.DocType;
@@ -25,18 +28,24 @@ import org.kuali.rice.coreservice.api.CoreServiceApiServiceLocator;
 import org.kuali.rice.coreservice.api.parameter.Parameter;
 import org.kuali.rice.coreservice.api.parameter.ParameterKey;
 import org.kuali.rice.coreservice.impl.parameter.ParameterServiceImpl;
+import org.kuali.rice.krad.service.BusinessObjectService;
+import org.kuali.rice.krad.service.KRADServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Date;
 
 /**
  * Created with IntelliJ IDEA.
  * User: sambasivam
  * Date: 12/13/13
  * Time: 6:21 PM
- * To change this template usec File | Settings | File Templates.
+ * To change this template use File | Settings | File Templates.
  */
 public class DocstoreServiceImpl implements DocstoreService {
     private static final Logger LOG = LoggerFactory.getLogger(DocstoreServiceImpl.class);
@@ -44,6 +53,7 @@ public class DocstoreServiceImpl implements DocstoreService {
     private DocstoreSearchService docstoreSearchService = null;
     private DocstoreIndexService docstoreIndexService = null;
     protected ParameterServiceImpl parameterService = new ParameterServiceImpl();
+    private BusinessObjectService businessObjectService;
 
     public String getParameter() {
         ParameterKey parameterKey = ParameterKey.create(OLE, OLE_DESC, DESCRIBE, PROCESS_SOLR_IND);
@@ -298,20 +308,36 @@ public class DocstoreServiceImpl implements DocstoreService {
         if (!DocumentUniqueIDPrefix.hasPrefix(holdingsId)) {
             holdingsId = DocumentUniqueIDPrefix.getPrefixedId(DocumentUniqueIDPrefix.PREFIX_WORK_HOLDINGS_OLEML, holdingsId);
         }
+        Map holdingsMap = new HashMap();
+        holdingsMap.put("holdingsId", DocumentUniqueIDPrefix.getDocumentId(holdingsId));
+        Holdings holding = retrieveHoldings(holdingsId);
+        RdbmsHoldingsDocumentManager rdbmsHoldingsDocumentManager = RdbmsHoldingsDocumentManager.getInstance();
+        HoldingsRecord holdingsRecord = rdbmsHoldingsDocumentManager.getExistingHoldings(holdingsId);
+        List<ItemRecord> itemRecordList = (List<ItemRecord>) getBusinessObjectService().findMatching(ItemRecord.class, holdingsMap);
+
         try {
-            Holdings holding = retrieveHoldings(holdingsId);
             getDocstoreStorageService().deleteHoldings(holdingsId);
             getDocstoreStorageService().saveDeletedHolding(holding);
         } catch (Exception e) {
-            LOG.error("Exception occurred while deleting Holdings ", e);
+            try {
+                getDocstoreStorageService().deleteHoldings(holdingsId);
+                getDocstoreStorageService().saveDeletedHolding(holding);
+            } catch (Exception ie) {
+                LOG.error("Exception occurred while deleting Holdings  ", ie);
+                docstoreStorageService.rollback(holdingsRecord, holdingsId, itemRecordList);
             throw e;
+            }
         }
         try {
             getDocstoreIndexService().deleteHoldings(holdingsId);
         } catch (Exception e) {
-            LOG.error("Exception occurred while indexing deleted Holdings ", e);
-            docstoreStorageService.rollback();
-            throw e;
+            try {
+                getDocstoreIndexService().deleteHoldings(holdingsId);
+            } catch (Exception ie) {
+                LOG.error("Exception occurred while indexing deleted Holdings ", ie);
+                docstoreStorageService.rollback(holdingsRecord, holdingsId, itemRecordList);
+                throw e;
+            }
         }
     }
 
@@ -320,20 +346,33 @@ public class DocstoreServiceImpl implements DocstoreService {
         if (!DocumentUniqueIDPrefix.hasPrefix(itemId)) {
             itemId = DocumentUniqueIDPrefix.getPrefixedId(DocumentUniqueIDPrefix.PREFIX_WORK_ITEM_OLEML, itemId);
         }
+        Item item = retrieveItem(itemId);
+        Map itemMap = new HashMap();
+        itemMap.put("itemId", DocumentUniqueIDPrefix.getDocumentId(itemId));
+        ItemRecord itemRecord = (ItemRecord) getBusinessObjectService().findByPrimaryKey(ItemRecord.class, itemMap);
         try {
-            Item item = retrieveItem(itemId);
             getDocstoreStorageService().deleteItem(itemId);
             getDocstoreStorageService().saveDeletedItem(item);
         } catch (Exception e) {
-            LOG.error("Exception occurred while deleting item ", e);
+            try {
+                getDocstoreStorageService().deleteItem(itemId);
+                getDocstoreStorageService().saveDeletedItem(item);
+            } catch (Exception ie) {
+                LOG.error("Exception occurred while deleteting item ", ie);
+                docstoreStorageService.rollback(itemId, itemRecord);
             throw e;
+            }
         }
         try {
             getDocstoreIndexService().deleteItem(itemId);
         } catch (Exception e) {
-            LOG.error("Exception occurred while indexing deleted item ", e);
-            docstoreStorageService.rollback();
+            try {
+                getDocstoreIndexService().deleteItem(itemId);
+            } catch (Exception ie) {
+                LOG.error("Exception occurred while indexing deleted item ", ie);
+                docstoreStorageService.rollback(itemId, itemRecord);
             throw e;
+            }
         }
     }
 
@@ -610,17 +649,28 @@ public class DocstoreServiceImpl implements DocstoreService {
             Bib bib = retrieveBib(bibId);
             bibs.add(bib);
         }
-        getDocstoreStorageService().deleteBibs(bibIds);
         try {
+            getDocstoreStorageService().deleteBibs(bibIds);
             getDocstoreStorageService().saveDeletedBibs(bibs);
         } catch (Exception e) {
-            LOG.error("Exception occurred while saving deleted bib records ", e);
+        try {
+                getDocstoreStorageService().deleteBibs(bibIds);
+            getDocstoreStorageService().saveDeletedBibs(bibs);
+            } catch (Exception ie) {
+                LOG.error("Exception occurred while saving deleted bib records ", ie);
+                docstoreStorageService.rollback();
+            }
         }
         try {
-            getDocstoreIndexService().deleteBibs(bibIds);
+                getDocstoreIndexService().deleteBibs(bibIds);
         } catch (Exception e) {
-            LOG.error("Exception occurred while indexing bib records after deletion", e);
-            docstoreStorageService.rollback();
+            try {
+                getDocstoreIndexService().deleteBibs(bibIds);
+            }
+            catch (Exception ie) {
+                LOG.error("Exception occurred while indexing bib records after deletion", e);
+                docstoreStorageService.rollback();
+            }
         }
     }
 
@@ -1466,5 +1516,13 @@ public class DocstoreServiceImpl implements DocstoreService {
         }
         return bibTrees;
     }
+
+    public BusinessObjectService getBusinessObjectService() {
+        if (null == businessObjectService) {
+            businessObjectService = KRADServiceLocator.getBusinessObjectService();
+        }
+        return businessObjectService;
+    }
+
 
 }
