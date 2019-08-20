@@ -110,7 +110,11 @@ public class BatchRestController extends OleNgControllerBase {
                         extension = FilenameUtils.getExtension(originalFilename);
                     }
                     BatchProcessProfile batchProcessProfile = getBatchProfileRequestHandler().getBatchProcessProfileById(Long.parseLong(profileId));
+                    Map batchMap = new HashMap();
+                    batchMap.put("jobName", batchType);
+                    List<BatchProcessJob> batchProcessJobs = (List<BatchProcessJob>) getBusinessObjectService().findMatching(BatchProcessJob.class,batchMap);
                     BatchProcessJob batchProcessJob = new BatchProcessJob();
+                    if(org.apache.commons.collections.CollectionUtils.isEmpty(batchProcessJobs)) {
                     batchProcessJob.setJobType(OleNGConstants.ADHOC);
                     batchProcessJob.setProfileType(batchType);
                     batchProcessJob.setBatchProfileId(Long.parseLong(profileId));
@@ -122,8 +126,14 @@ public class BatchRestController extends OleNgControllerBase {
                     batchProcessJob.setJobName(batchType);
                     batchProcessJob.setStatus(OleNGConstants.RUNNING);
                     getBusinessObjectService().save(batchProcessJob);
-
-                    BatchJobDetails batchJobDetails =  getBatchUtil().createBatchJobDetailsEntry(batchProcessJob, originalFilename);
+                    }
+                    else {
+                        batchProcessJob = batchProcessJobs.get(0);
+                        batchProcessJob.setStatus(OleNGConstants.RUNNING);
+                        getBusinessObjectService().save(batchProcessJob);
+                        batchProcessJob.setBatchProfileId(Long.parseLong(profileId));
+                    }
+                    BatchJobDetails batchJobDetails =  getBatchUtil().createBatchJobDetailsEntryforQuickImport(batchProcessJob, originalFilename);
                     getBusinessObjectService().save(batchJobDetails);
 
                     JSONObject response = processBatch(uploadedDirectory, batchType, profileId, extension, batchJobDetails);
