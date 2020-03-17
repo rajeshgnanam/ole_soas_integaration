@@ -575,7 +575,14 @@ public class PurchaseOrderEdi {
                     lineCount++;
                 }
                 if (oleBatchProcessProfileConstantsBo.getAttributeName().equalsIgnoreCase(OLEConstants.ITM_TIT)) {
-                    ediItemValues.put(OLEConstants.ITM_TIT, oleBatchProcessProfileConstantsBo.getAttributeValue().replace(OLEConstants.EDIBatchProfile.SYMBOL_ASTERISK, purchaseOrderItem.getDocData().getTitle()!=null ? purchaseOrderItem.getDocData().getTitle().replace("'","?'") : purchaseOrderItem.getDocData().getTitle()));
+                    String title = purchaseOrderItem.getDocData().getTitle();
+                    if(title != null){
+                        if(purchaseOrderDocument.getVendorName().equalsIgnoreCase("Casalini Libri") && title.length() > 35){
+                            title = title.substring(0,34);
+                        }
+                        title = title.replace("'","?'");
+                    }
+                    ediItemValues.put(OLEConstants.ITM_TIT, oleBatchProcessProfileConstantsBo.getAttributeValue().replace(OLEConstants.EDIBatchProfile.SYMBOL_ASTERISK, title));
                     lineCount++;
                 }
                 if (oleBatchProcessProfileConstantsBo.getAttributeName().equalsIgnoreCase(OLEConstants.EDIBatchProfile.ITEM_PUBLISHER)) {
